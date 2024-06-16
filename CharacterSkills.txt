@@ -1,0 +1,46 @@
+Strength----------->                 //Increases melee/thrown damage
+--Doorbreak 1--Doorbreak 2           //Can break level 1 then 2 doors
+--Improvised blunts--Serious blunts  //Can use level 1 then 2 blunts
+
+Dexterity---------->                 //Increases movement speed/dodge/hit chance
+--Jump------------->                 //Increases jump velocity
+----Smash 1--Smash 2                 //Can cause damage to environment at level 1 then 2
+--Personal--Industrial--Military     //Can use level 1, 2, then 3 guns
+--Knives--Swords                     //Can use level 1 then 2 blades
+
+Constitution------->                 //Increases hitpoints
+--Fall------------->                 //Increases max survivable fall height
+----DfA 1--DfA 2                     //Death from above at level 1 then 2
+
+Intelligence------->                 //Increases rewiring range
+--Hacking 1--Hacking 2               //Can rewire level 1 then 2 circuits
+--Devices 1--Devices 2               //Can rewire level 1 then 2 devices
+
+Wisdom/Willpower--->                 //Increases character willingness
+--Blindsight------->                 //Increase chance to hit in dark
+----Scopaesthesia--Advanced ToM      //Knows when seen then can see vision cones
+--Focus 1--Focus 2                   //Can lock out distractions at level 1 then 2
+
+Charisma----------->                 //Increases income
+--Mesmerise 1--Mesmerise 2           //Can cause mesmerise at level 1 then 2
+--Dialogues 1--Dialogues 2           //Level 1 then 2 dialogue options unlocked
+
+Description of skills:
+Advanced Theory of Mind     - Can see danger zones in environment and vision cones
+Blades                      - lvl1: knife usage, lvl2: sword usage
+Blunts                      - lvl1: one-handed blunts, lvl2: two-handed blunts
+Death from above            - lvl1: unarmoured enemies, lvl2: armoured enemies
+Devices                     - lvl1: basic doors, lights, etc.
+                              lvl2: secure doors, security cameras, etc.
+Dialogues                   - lvl1: low benefit, lvl2: high benefit
+Doorbreak                   - lvl1: basic door break, lvl2: heavy door break
+Focus                       - lvl1: long time on task under pressure, darkened UI backdrop
+                              lvl2: greater time, black UI backdrop
+Hacking                     - lvl1: unsecured circuits, lvl2: secure circuits
+Mesmerise                   - lvl1: can cause enemy to pause, lvl2: can cause fleeing/recruitment
+Ranged                      - lvl1: usage of personal firearms
+                              lvl2: usage of industrial firearms
+                              lvl3: usage of military firearms
+Scopaesthesia               - Given warning when becoming visible
+Smash                       - lvl1: can break through glass, desks, weak security objects
+                              lvl2: can break weaker walls and heavier objects
