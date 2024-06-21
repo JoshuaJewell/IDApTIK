@@ -25,6 +25,7 @@ Charisma----------->                 //Increases income
 --Mesmerise 1--Mesmerise 2           //Can cause mesmerise at level 1 then 2
 --Dialogues 1--Dialogues 2           //Level 1 then 2 dialogue options unlocked
 
+
 Description of skills:
 Advanced Theory of Mind     - Can see danger zones in environment and vision cones
 Blades                      - lvl1: knife usage, lvl2: sword usage
