@@ -1,0 +1,28 @@
+{
+  "name": "gitpoint-platformer",
+  "version": "0.1",
+  "description": "well, this is version 0.1 - what are you expecting?",
+  "main": "index.js",
+  "scripts": {
+    "serve:static": "http-server -a localhost -p 1337 src/static",
+    "serve:package": "webpack-dev-server --progress --colors --port 1338",
+    "serve": "concurrently \"npm run serve:package\" \"npm run serve:static\"",
+    "prep:static": "node ./src/meta/meta.prepare-static.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joshua and Jonathan Jewell",
+  "license": "APGL",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "copy": "^0.3.2",
+    "http-server": "^0.1.2",
+    "source-map-loader": "^5.0.0",
+    "ts-loader": "^9.5.1",
+    "webpack": "^5.92.0",
+    "webpack-dev-server": "^5.0.4",
+    "webpack-node-externals": "^3.0.0"
+  },
+  "dependencies": {
+    "excaliburjs": "^0.29.3",
+  }
+}
