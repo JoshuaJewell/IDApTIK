@@ -1,30 +1,45 @@
+const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
+
 module.exports = {
-    entry: "./src/meta/meta.entry.ts",
-    
-    output: {
-        filename: "bundle.js",
-        publicPath: "http://localhost:1338/js"
+    entry: './src/main.ts',
+    devtool: 'source-map',
+    devServer: {
+        port: 9000,
+        allowedHosts: 'all',
+        devMiddleware: {
+            writeToDisk: true
+        },
+        static: {
+            directory: path.resolve(__dirname)
+        }
     },
-
-    // Enable sourcemaps for debugging webpack's output.
-    devtool: "source-map",
-
+    plugins: [
+        new CopyPlugin({
+            patterns: [
+                "index.html"
+            ],
+        }),
+    ],
     resolve: {
-        extensions: [".webpack.js", ".web.js", ".ts", ".js"]
+        extensions: ['.ts', '.js']
     },
-
+    output: {
+        filename: '[name].js',
+        sourceMapFilename: '[file].map',
+        path: path.resolve(__dirname, 'dist')
+    },
     module: {
         rules: [
-            { test: /\.ts$/, loader: "ts-loader" },
-
-            // Re-process all .js files with the sourcemap loader (for debugging against original ts files).
-            { enforce: 'pre', test: /\.js$/, loader: "source-map-loader" }
+            {
+                test: /\.ts?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            },
+            {
+                test: /\.(png|jpg|bmp|wav|mp3)$/,
+                type: 'asset/resource'
+            }
         ]
-    },
-
-    // Don't add to bundle, assume named external is accessible through global.
-    externals: { 
-        "matter-js": "Matter",
-        "three": "THREE"
     }
-};
+}
