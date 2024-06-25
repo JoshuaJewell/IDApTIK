@@ -7,7 +7,7 @@ export class Bot extends ex.Actor {
     public jumped = false;
     public hurt = false;
     public xvel = 0;
-    public facing = 1;
+    public facing = 1; // 1 Left, 2 Right, -1 Leftdown, -2 Rightdown
     public animstate = 0;
     public hurtTime: number = 0;
     constructor(x: number, y: number) {
@@ -54,41 +54,46 @@ export class Bot extends ex.Actor {
         sprintleft.scale = new ex.Vector(2, 2);
         sprintleft.flipHorizontal = true;
 
-        const crouchright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
-        sprintleft.scale = new ex.Vector(2, 2);
+        const crouchright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [34, 35, 36], 100);
+        crouchright.scale = new ex.Vector(2, 2);
 
-        const crouchleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
-        sprintleft.scale = new ex.Vector(2, 2);
-        sprintleft.flipHorizontal = true;
+        const crouchleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [34, 35, 36], 100);
+        crouchleft.scale = new ex.Vector(2, 2);
+        crouchleft.flipHorizontal = true;
 
-        /*
         const jumpright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
         jumpright.scale = new ex.Vector(2, 2);
 
         const jumpleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
         jumpleft.scale = new ex.Vector(2, 2);
         jumpleft.flipHorizontal = true;
-        */
 
         // Register animations with actor
         this.graphics.add("hurtleft", hurtleft);
         this.graphics.add("hurtright", hurtright);
-        this.graphics.add("idleright", idleright);
+
         this.graphics.add("idleleft", idleleft);
+        this.graphics.add("idleright", idleright);
+        
         this.graphics.add("left", left);
         this.graphics.add("right", right);
+        
         this.graphics.add("sprintleft", sprintleft);
         this.graphics.add("sprintright", sprintright);
 
-        //this.graphics.add("jumpleft", jumpleft);
-        //this.graphics.add("jumpright", jumpright);
+        this.graphics.add("crouchleft", crouchleft);
+        this.graphics.add("crouchright", crouchright);
+
+
+        this.graphics.add("jumpleft", jumpleft);
+        this.graphics.add("jumpright", jumpright);
 
         // onPostCollision is an event, not a lifecycle meaning it can be subscribed to by other things
         this.on('postcollision', (evt) => this.onPostCollision(evt));
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        // Bot has collided with it's Top of another collider
+        // Bot has collided with its Top of another collider
         console.log(evt.other.name);
         if (evt.side === ex.Side.Bottom) {
             this.onGround = true;
@@ -122,23 +127,27 @@ export class Bot extends ex.Actor {
 
         // Reset vars
         this.xvel = 0;
-        this.animstate = 0;
 
         // Player input
-        if (engine.input.keyboard.isHeld(ex.Input.Keys.Right)) {
-            this.xvel += 150;
+        if (engine.input.keyboard.isHeld(ex.Input.Keys.Right) && this.onGround) {
+            this.xvel += 160;
+            this.facing = 2;
+        }
+        if (engine.input.keyboard.isHeld(ex.Input.Keys.Left) && this.onGround) {
+            this.xvel += -160;
             this.facing = 1;
         }
-        if (engine.input.keyboard.isHeld(ex.Input.Keys.Left)) {
-            this.xvel += -150;
-            this.facing = 0;
-        }
-        if(engine.input.keyboard.isHeld(ex.Input.Keys.Down)) {
+        if(engine.input.keyboard.isHeld(ex.Input.Keys.Down) && this.onGround) {
             this.xvel *= 0.5;
+            this.facing = -Math.abs(this.facing);
         }
-        else if (engine.input.keyboard.isHeld(ex.Input.Keys.ShiftLeft)) {
+        else if (engine.input.keyboard.isHeld(ex.Input.Keys.ShiftLeft) && this.onGround) {
             this.xvel *= 2;
         }
+        else {
+            this.facing = Math.abs(this.facing);
+        }
+
         this.vel.x = this.xvel;
 
         if(engine.input.keyboard.isHeld(ex.Input.Keys.Up) && this.onGround) {
@@ -147,64 +156,52 @@ export class Bot extends ex.Actor {
             Resources.jump.play(.1);
         }
 
-        
-
+        // Apply animations
         switch (Math.abs(this.xvel) + this.facing) {
-            case 0: {
+            case 1: {
                 this.graphics.use("idleleft");
                 break;
             }
-            case 1: {
+            case 2: {
                 this.graphics.use("idleright");
                 break;
             }
-            case 150: {
+            case 161: {
                 this.graphics.use("left");
                 break;
             }
-            case 151: {
+            case 162: {
                 this.graphics.use("right");
                 break;
             }
-            case 300: {
+            case 321: {
                 this.graphics.use("sprintleft");
                 break;
             }
-            case 301: {
-                this.graphics.use("sprintright")
+            case 322: {
+                this.graphics.use("sprintright");
+                break;
             }
-        }
-
-
-
-
-        /*
-        // Change animation based on velocity
-        if (this.vel.x < 0 && !this.hurt) {
-            this.graphics.use("left");
-        } 
-        if (this.vel.x > 0 && !this.hurt) {
-            this.graphics.use("right");
-        }
-        if (this.xvel < -160 && !this.hurt) {
-            this.graphics.use("sprintleft");
-        } 
-        if (this.vel.x > 160 && !this.hurt) {
-            this.graphics.use("sprintright");
-        } 
-        if (this.vel.x === 0 && !this.hurt){
-            if (this.facing === 1) {
-                this.graphics.use("idleright");
+            case 79: {
+                this.graphics.use("crouchleft");
+                break;
             }
-            else {
-                this.graphics.use("idleleft")
+            case 78: {
+                this.graphics.use("crouchright");
+                break;
             }
+            case -1: {
+                this.graphics.use("crouchleft");
+                break;
+            }
+            case -2: {
+                this.graphics.use("crouchright");
+                break;
+            }
+            //default: {
+            //    this.graphics.use("jumpright")
+            //}
         }
-    
-        // Change animation based on crouch state
-        if (this.crouching) {
-            
-        }
-        */
+
     }
 }
