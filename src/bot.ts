@@ -1,11 +1,13 @@
 import * as ex from 'excalibur';
-import { botSpriteSheet, Resources } from './resources';
+import { botSpriteSheet, Resources, newBotSpriteSheet } from './resources';
 import { Baddie } from './baddie';
 
 export class Bot extends ex.Actor {
     public onGround = true;
     public jumped = false;
     public hurt = false;
+    public xvel = 0;
+    public facing = 1;
     public hurtTime: number = 0;
     constructor(x: number, y: number) {
         super({
@@ -21,30 +23,56 @@ export class Bot extends ex.Actor {
     onInitialize(engine: ex.Engine) {
         // Initialize actor
 
-        // Setup visuals
+        // Legacy visuals
         const hurtleft = ex.Animation.fromSpriteSheet(botSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
         hurtleft.scale = new ex.Vector(2, 2);
+        hurtleft.flipHorizontal = true;
 
         const hurtright = ex.Animation.fromSpriteSheet(botSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
         hurtright.scale = new ex.Vector(2, 2);
-        hurtright.flipHorizontal = true;
 
-        const idle = ex.Animation.fromSpriteSheet(botSpriteSheet, [2, 3], 800);
-        idle.scale = new ex.Vector(2, 2);
+        // New visuals
+        const idleright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
+        idleright.scale = new ex.Vector(2, 2);
 
-        const left = ex.Animation.fromSpriteSheet(botSpriteSheet, [3, 4, 5, 6, 7], 100);
-        left.scale = new ex.Vector(2, 2);
+        const idleleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [0, 1, 8,9, 8, 1], 200);
+        idleleft.scale = new ex.Vector(2, 2);
+        idleleft.flipHorizontal = true;
 
-        const right = ex.Animation.fromSpriteSheet(botSpriteSheet, [3, 4, 5, 6, 7], 100);
+        const right = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [16, 17, 18, 19], 100);
         right.scale = new ex.Vector(2, 2);
-        right.flipHorizontal = true;;
+
+        const left = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [16, 17, 18, 19], 100);
+        left.scale = new ex.Vector(2, 2);
+        left.flipHorizontal = true;
+
+        const sprintright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
+        sprintright.scale = new ex.Vector(2, 2);
+
+        const sprintleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
+        sprintleft.scale = new ex.Vector(2, 2);
+        sprintleft.flipHorizontal = true;
+
+        /*
+        const jumpright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
+        jumpright.scale = new ex.Vector(2, 2);
+
+        const jumpleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
+        jumpleft.scale = new ex.Vector(2, 2);
+        jumpleft.flipHorizontal = true;
+        */
 
         // Register animations with actor
         this.graphics.add("hurtleft", hurtleft);
         this.graphics.add("hurtright", hurtright);
-        this.graphics.add("idle", idle);
+        this.graphics.add("idleright", idleright);
+        this.graphics.add("idleleft", idleleft);
         this.graphics.add("left", left);
         this.graphics.add("right", right);
+        this.graphics.add("sprintleft", sprintleft);
+        this.graphics.add("sprintright", sprintright);
+        //this.graphics.add("jumpleft", jumpleft);
+        //this.graphics.add("jumpright", jumpright);
 
         // onPostCollision is an event, not a lifecycle meaning it can be subscribed to by other things
         this.on('postcollision', (evt) => this.onPostCollision(evt));
@@ -83,17 +111,22 @@ export class Bot extends ex.Actor {
             }
         }
 
-        // Reset x velocity
-        this.vel.x = 0;
+        // Reset vars
+        this.xvel = 0;
 
         // Player input
-        if(engine.input.keyboard.isHeld(ex.Input.Keys.Left)) {
-            this.vel.x = -150;
+        if (engine.input.keyboard.isHeld(ex.Input.Keys.Right)) {
+            this.xvel += 150;
+            this.facing = 1;
         }
-
-        if(engine.input.keyboard.isHeld(ex.Input.Keys.Right)) {
-            this.vel.x = 150;
+        if (engine.input.keyboard.isHeld(ex.Input.Keys.Left)) {
+            this.xvel += -150;
+            this.facing = -1;
         }
+        if (engine.input.keyboard.isHeld(ex.Input.Keys.ShiftLeft)) {
+            this.xvel *= 2;
+        }
+        this.vel.x = this.xvel;
 
         if(engine.input.keyboard.isHeld(ex.Input.Keys.Up) && this.onGround) {
             this.vel.y = -400;
@@ -108,8 +141,19 @@ export class Bot extends ex.Actor {
         if (this.vel.x > 0 && !this.hurt) {
             this.graphics.use("right");
         }
+        if (this.xvel < -160 && !this.hurt) {
+            this.graphics.use("sprintleft");
+        } 
+        if (this.vel.x > 160 && !this.hurt) {
+            this.graphics.use("sprintright");
+        } 
         if (this.vel.x === 0 && !this.hurt){
-            this.graphics.use("idle")
+            if (this.facing === 1) {
+                this.graphics.use("idleright");
+            }
+            else {
+                this.graphics.use("idleleft")
+            }
         }
     }
 }
