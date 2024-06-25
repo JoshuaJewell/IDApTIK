@@ -8,6 +8,7 @@ const npcFile = require('../res/npc.png');
 const jumpSound = require('../res/jump.wav');
 const hitSound = require('../res/hurt.wav');
 const gotEmSound = require('../res/gottem.wav');
+const newBotFile = require('../res/HPCHAR.png');
 
 const Resources = {
     bot: new ex.ImageSource(botFile),
@@ -17,7 +18,8 @@ const Resources = {
     npc: new ex.ImageSource(npcFile),
     jump: new ex.Sound(jumpSound),
     hit: new ex.Sound(hitSound),
-    gotEm: new ex.Sound(gotEmSound)
+    gotEm: new ex.Sound(gotEmSound),
+    newBot: new ex.ImageSource(newBotFile),
 }
 
 const loader = new ex.Loader();
@@ -49,6 +51,15 @@ const baddieSpriteSheet = ex.SpriteSheet.fromImageSource({
         spriteHeight: 32
     }
 });
+const newBotSpriteSheet = ex.SpriteSheet.fromImageSource({
+    image: Resources.newBot,
+    grid: {
+        columns: 8,
+        rows: 9,
+        spriteWidth: 32,
+        spriteHeight: 32
+    }
+});
 const blockSprite = Resources.block.toSprite();
 const npcSprite = Resources.npc.toSprite();
 
@@ -56,4 +67,4 @@ for (const res in Resources) {
     loader.addResource((Resources as any)[res]);
 }
 
-export { Resources, loader, botSpriteSheet, botRedSpriteSheet, baddieSpriteSheet, blockSprite, npcSprite }
+export { Resources, loader, botSpriteSheet, botRedSpriteSheet, baddieSpriteSheet, blockSprite, npcSprite, newBotSpriteSheet }
