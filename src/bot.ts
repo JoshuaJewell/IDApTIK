@@ -8,6 +8,7 @@ export class Bot extends ex.Actor {
     public hurt = false;
     public xvel = 0;
     public facing = 1;
+    public animstate = 0;
     public hurtTime: number = 0;
     constructor(x: number, y: number) {
         super({
@@ -53,6 +54,13 @@ export class Bot extends ex.Actor {
         sprintleft.scale = new ex.Vector(2, 2);
         sprintleft.flipHorizontal = true;
 
+        const crouchright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
+        sprintleft.scale = new ex.Vector(2, 2);
+
+        const crouchleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
+        sprintleft.scale = new ex.Vector(2, 2);
+        sprintleft.flipHorizontal = true;
+
         /*
         const jumpright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
         jumpright.scale = new ex.Vector(2, 2);
@@ -71,6 +79,7 @@ export class Bot extends ex.Actor {
         this.graphics.add("right", right);
         this.graphics.add("sprintleft", sprintleft);
         this.graphics.add("sprintright", sprintright);
+
         //this.graphics.add("jumpleft", jumpleft);
         //this.graphics.add("jumpright", jumpright);
 
@@ -113,6 +122,7 @@ export class Bot extends ex.Actor {
 
         // Reset vars
         this.xvel = 0;
+        this.animstate = 0;
 
         // Player input
         if (engine.input.keyboard.isHeld(ex.Input.Keys.Right)) {
@@ -121,9 +131,12 @@ export class Bot extends ex.Actor {
         }
         if (engine.input.keyboard.isHeld(ex.Input.Keys.Left)) {
             this.xvel += -150;
-            this.facing = -1;
+            this.facing = 0;
         }
-        if (engine.input.keyboard.isHeld(ex.Input.Keys.ShiftLeft)) {
+        if(engine.input.keyboard.isHeld(ex.Input.Keys.Down)) {
+            this.xvel *= 0.5;
+        }
+        else if (engine.input.keyboard.isHeld(ex.Input.Keys.ShiftLeft)) {
             this.xvel *= 2;
         }
         this.vel.x = this.xvel;
@@ -134,6 +147,38 @@ export class Bot extends ex.Actor {
             Resources.jump.play(.1);
         }
 
+        
+
+        switch (Math.abs(this.xvel) + this.facing) {
+            case 0: {
+                this.graphics.use("idleleft");
+                break;
+            }
+            case 1: {
+                this.graphics.use("idleright");
+                break;
+            }
+            case 150: {
+                this.graphics.use("left");
+                break;
+            }
+            case 151: {
+                this.graphics.use("right");
+                break;
+            }
+            case 300: {
+                this.graphics.use("sprintleft");
+                break;
+            }
+            case 301: {
+                this.graphics.use("sprintright")
+            }
+        }
+
+
+
+
+        /*
         // Change animation based on velocity
         if (this.vel.x < 0 && !this.hurt) {
             this.graphics.use("left");
@@ -155,5 +200,11 @@ export class Bot extends ex.Actor {
                 this.graphics.use("idleleft")
             }
         }
+    
+        // Change animation based on crouch state
+        if (this.crouching) {
+            
+        }
+        */
     }
 }
