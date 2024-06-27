@@ -8,8 +8,9 @@ export class Bot extends ex.Actor {
     public hurt = false;
     public xvel = 0;
     public facing = 1; // 1 Left, 2 Right, -1 Leftdown, -2 Rightdown
-    public animstate = 0;
     public hurtTime: number = 0;
+    public attacking = 0;
+    public jumpPotential = 0;
     constructor(x: number, y: number) {
         super({
             name: 'Bot',
@@ -61,6 +62,13 @@ export class Bot extends ex.Actor {
         crouchleft.scale = new ex.Vector(2, 2);
         crouchleft.flipHorizontal = true;
 
+        const attackright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
+        attackright.scale = new ex.Vector(2, 2);
+
+        const attackleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
+        attackleft.scale = new ex.Vector(2, 2);
+        attackleft.flipHorizontal = true;
+
         const jumpright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
         jumpright.scale = new ex.Vector(2, 2);
 
@@ -84,6 +92,8 @@ export class Bot extends ex.Actor {
         this.graphics.add("crouchleft", crouchleft);
         this.graphics.add("crouchright", crouchright);
 
+        this.graphics.add("attackleft", attackleft);
+        this.graphics.add("attackright", attackright);
 
         this.graphics.add("jumpleft", jumpleft);
         this.graphics.add("jumpright", jumpright);
@@ -129,6 +139,10 @@ export class Bot extends ex.Actor {
         this.xvel = 0;
 
         // Player input
+        if (engine.input.keyboard.isHeld(ex.Input.Keys.X)) {
+            this.attacking = 42;
+        }
+
         if (engine.input.keyboard.isHeld(ex.Input.Keys.Right) && this.onGround) {
             this.xvel += 160;
             this.facing = 2;
@@ -148,13 +162,16 @@ export class Bot extends ex.Actor {
             this.facing = Math.abs(this.facing);
         }
 
-        this.vel.x = this.xvel;
-
-        if(engine.input.keyboard.isHeld(ex.Input.Keys.Up) && this.onGround) {
-            this.vel.y = -400;
-            this.onGround = false;
-            Resources.jump.play(.1);
+        if(engine.input.keyboard.isHeld(ex.Input.Keys.Up) && this.onGround && (this.jumpPotential > -500)) {
+            this.jumpPotential -= 10;
+            this.xvel = 0;
         }
+        else if(!engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential < 0)) {
+            this.vel.y = this.jumpPotential;
+            this.jumpPotential = 0;
+            this.onGround = false;
+        }
+        this.vel.x = this.xvel;
 
         // Apply animations
         switch (Math.abs(this.xvel) + this.facing) {
@@ -202,6 +219,14 @@ export class Bot extends ex.Actor {
             //    this.graphics.use("jumpright")
             //}
         }
-
+        if (this.attacking > 0) {
+            if (this.facing === 1 || this.facing === -1) {
+                this.graphics.use("attackleft");
+            }
+            else {
+                this.graphics.use("attackright");
+            }
+            this.attacking -= 1;
+        }
     }
 }
