@@ -24,7 +24,7 @@ export class Bot extends ex.Actor {
     // OnInitialize is called before the 1st actor update
     onInitialize(engine: ex.Engine) {
         // Initialize actor
-
+        
         // Legacy visuals
         const hurtleft = ex.Animation.fromSpriteSheet(botSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
         hurtleft.scale = new ex.Vector(2, 2);
@@ -162,15 +162,32 @@ export class Bot extends ex.Actor {
             this.facing = Math.abs(this.facing);
         }
 
-        if(engine.input.keyboard.isHeld(ex.Input.Keys.Up) && this.onGround && (this.jumpPotential > -500)) {
-            this.jumpPotential -= 10;
+        if(engine.input.keyboard.isHeld(ex.Input.Keys.Up) && this.onGround && (this.jumpPotential < 500)) {
+            this.jumpPotential += 10;
             this.xvel = 0;
+            const lineActor = new ex.Actor({
+                pos: this.getGlobalPos(),
+            })
+            let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
+            let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
+            let relpos = ex.vec(relx, rely);
+            lineActor.graphics.anchor = ex.Vector.Zero
+            lineActor.graphics.use(
+                new ex.Line({
+                    start: ex.vec(0, 0),
+                    end: relpos,
+                    color: ex.Color.Green,
+                    thickness: 10,
+                })
+            )
+            engine.add(lineActor);
         }
-        else if(!engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential < 0)) {
-            this.vel.y = this.jumpPotential;
+        else if(!engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential > 0)) {
+            this.vel.y = -Math.abs(this.jumpPotential);
             this.jumpPotential = 0;
             this.onGround = false;
         }
+
         this.vel.x = this.xvel;
 
         // Apply animations
