@@ -37,3 +37,5 @@ engine.start(loader).then(() => {
 // For test hook
 (window as any).engine = engine;
 (window as any).level = level;
+
+export default engine;
