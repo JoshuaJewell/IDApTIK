@@ -49,7 +49,7 @@ export class Baddie extends ex.Actor {
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        if (evt.other instanceof Bot && (evt.side === ex.Side.Top || ((bot.killing = true)))) {
+        if (evt.other instanceof Bot && (evt.side === ex.Side.Top)) {
             Resources.gotEm.play(.1);
             // Clear patrolling
             this.actions.clearActions();
