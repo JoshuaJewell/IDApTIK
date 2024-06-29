@@ -112,7 +112,7 @@ export class Bot extends ex.Actor {
         // Bot has collided on the side, display hurt animation
         if ((evt.side === ex.Side.Left ||
              evt.side === ex.Side.Right) &&
-            evt.other instanceof Baddie) {
+             evt.other instanceof Baddie) {
             if (this.vel.x < 0 && !this.hurt) {
                 this.graphics.use("hurtleft");
             } 
@@ -136,7 +136,10 @@ export class Bot extends ex.Actor {
         }
 
         // Reset vars
-        this.xvel = 0;
+        
+        if (this.onGround) {
+            this.xvel = 0;
+        }
 
         // Player input
         if (engine.input.keyboard.isHeld(ex.Input.Keys.X)) {
@@ -162,28 +165,32 @@ export class Bot extends ex.Actor {
             this.facing = Math.abs(this.facing);
         }
 
+        let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
+        let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
+        let jumpangle = Math.atan(rely/relx);
+
         if(engine.input.keyboard.isHeld(ex.Input.Keys.Up) && this.onGround && (this.jumpPotential < 500)) {
             this.jumpPotential += 10;
             this.xvel = 0;
-            const lineActor = new ex.Actor({
+            /*const lineActor = new ex.Actor({
                 pos: this.getGlobalPos(),
             })
-            let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
-            let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
-            let relpos = ex.vec(relx, rely);
             lineActor.graphics.anchor = ex.Vector.Zero
             lineActor.graphics.use(
                 new ex.Line({
                     start: ex.vec(0, 0),
-                    end: relpos,
+                    end: ex.vec(relx, rely),
                     color: ex.Color.Green,
                     thickness: 10,
                 })
             )
-            engine.add(lineActor);
+            engine.add(lineActor);*/
         }
         else if(!engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential > 0)) {
-            this.vel.y = -Math.abs(this.jumpPotential);
+            let jumpvely = this.jumpPotential * Math.sin(jumpangle);
+            let jumpvelx = this.jumpPotential * Math.cos(jumpangle);
+            this.vel.y = -jumpvely;
+            this.xvel = jumpvelx;
             this.jumpPotential = 0;
             this.onGround = false;
         }

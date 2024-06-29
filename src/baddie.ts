@@ -1,6 +1,7 @@
 import * as ex from 'excalibur';
 import { baddieSpriteSheet, Resources } from "./resources";
 import { Bot } from './bot';
+let bot:Bot = new Bot(0, 0);
 
 export class Baddie extends ex.Actor {
     constructor(x: number, y: number, public dir: number) {
@@ -48,7 +49,7 @@ export class Baddie extends ex.Actor {
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        if (evt.other instanceof Bot && (evt.side === ex.Side.Top || (evt.side === ex.Side.Right || evt.side === ex.Side.Left))) {
+        if (evt.other instanceof Bot && (evt.side === ex.Side.Top || ((bot.killing = true)))) {
             Resources.gotEm.play(.1);
             // Clear patrolling
             this.actions.clearActions();
