@@ -23,7 +23,7 @@ export class Bot extends ex.Actor {
 
     // OnInitialize is called before the 1st actor update
     onInitialize(engine: ex.Engine) {
-        // Initialize actor
+        // Initialise actor
         
         // Legacy visuals
         const hurtleft = ex.Animation.fromSpriteSheet(botSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
@@ -109,7 +109,7 @@ export class Bot extends ex.Actor {
             this.onGround = true;
         }
 
-        // Bot has collided on the side, display hurt animation
+        // Bot has collided on the side, display hurt animation (effectively disabled due to other anims taking priority and bots immediately dying)
         if ((evt.side === ex.Side.Left ||
              evt.side === ex.Side.Right) &&
              evt.other instanceof Baddie) {
@@ -127,7 +127,7 @@ export class Bot extends ex.Actor {
 
     // After main update, once per frame execute this code
     onPreUpdate(engine: ex.Engine, delta: number) {
-        // If hurt, count down
+        // If hurt, count down (legacy code, seems this.hurt check is redundant but not ready to mess with yet)
         if (this.hurtTime >= 0 && this.hurt) {
             this.hurtTime -= delta;
             if (this.hurtTime < 0) {
@@ -137,7 +137,7 @@ export class Bot extends ex.Actor {
 
         // Reset vars
         
-        if (this.onGround) {
+        if (this.onGround) { // Doesn't kill xvel while in projectile motion
             this.xvel = 0;
         }
 
@@ -243,7 +243,8 @@ export class Bot extends ex.Actor {
             //    this.graphics.use("jumpright")
             //}
         }
-        if (this.attacking > 0) {
+
+        if (this.attacking > 0) { // Attack anim implementation needs rework, but not immediately important as placeholder art anyway
             if (this.facing === 1 || this.facing === -1) {
                 this.graphics.use("attackleft");
             }
