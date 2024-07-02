@@ -11,6 +11,7 @@ export class Bot extends ex.Actor {
     public hurtTime: number = 0;
     public attacking = 0;
     public jumpPotential = 0;
+    public t = 0;
     constructor(x: number, y: number) {
         super({
             name: 'Bot',
@@ -165,53 +166,42 @@ export class Bot extends ex.Actor {
             this.facing = Math.abs(this.facing);
         }
 
-        let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
-        let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
-        let jumpangle = Math.atan(rely/relx);
-
-        if(engine.input.keyboard.isHeld(ex.Input.Keys.Up) && this.onGround && (this.jumpPotential < 500)) {
-            this.jumpPotential += 10;
-            this.xvel = 0;
-
-            // Draw actor-mouse displacement (debug)
-            /*const lineActor = new ex.Actor({
-                pos: this.getGlobalPos(),
-            })
-            lineActor.graphics.anchor = ex.Vector.Zero
-            lineActor.graphics.use(
-                new ex.Line({
-                    start: ex.vec(0, 0),
-                    end: ex.vec(relx, rely),
-                    color: ex.Color.Green,
-                    thickness: 10,
-                })
-            )
-            engine.add(lineActor);*/
-        }
-        else if(!engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential > 0)) {
+        if ((engine.input.keyboard.isHeld(ex.Input.Keys.Up) || this.jumpPotential > 0) && this.onGround) {
+            let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
+            let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
+            let jumpangle = Math.atan2(rely, relx);
             let jumpvely = this.jumpPotential * Math.sin(jumpangle);
             let jumpvelx = this.jumpPotential * Math.cos(jumpangle);
+            this.facing = (0.5 * relx / Math.abs(relx)) + 1.5;
+            this.xvel = 0;
 
-            // Draw resultant vel (debug)
+            if (engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential < 500)) {
+                this.jumpPotential += 500;
+            }
+            else if (!engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential > 0)) {
+                this.vel.y = jumpvely + 10;
+                this.xvel = jumpvelx + 10;
+                this.jumpPotential = 0;
+                this.onGround = false;
+            }
+
+            /*this.t += 0.0008;
+            let trajpointx = this.t * jumpvelx;
+            let trajpointy = (this.t * jumpvely) - (800 * (this.t^2));
+
             const lineActor = new ex.Actor({
                 pos: this.getGlobalPos(),
             })
-            lineActor.graphics.anchor = ex.Vector.Zero
+            lineActor.graphics.anchor = ex.Vector.Zero;
             lineActor.graphics.use(
                 new ex.Line({
-                    start: ex.vec(0, 0),
-                    end: ex.vec(jumpvelx, jumpvely),
-                    color: ex.Color.Green,
-                    thickness: 10,
+                    start: ex.vec(trajpointx - 1, trajpointy - 1),
+                    end: ex.vec(trajpointx + 1, trajpointy + 1),
+                    color: ex.Color.Black,
+                    thickness: 2,
                 })
             )
-            engine.add(lineActor);
-
-
-            this.vel.y = -jumpvely;
-            this.xvel = jumpvelx;
-            this.jumpPotential = 0;
-            this.onGround = false;
+            engine.add(lineActor);*/
         }
 
         this.vel.x = this.xvel;
