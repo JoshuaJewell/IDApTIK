@@ -172,6 +172,8 @@ export class Bot extends ex.Actor {
         if(engine.input.keyboard.isHeld(ex.Input.Keys.Up) && this.onGround && (this.jumpPotential < 500)) {
             this.jumpPotential += 10;
             this.xvel = 0;
+
+            // Draw actor-mouse displacement (debug)
             /*const lineActor = new ex.Actor({
                 pos: this.getGlobalPos(),
             })
@@ -189,6 +191,23 @@ export class Bot extends ex.Actor {
         else if(!engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential > 0)) {
             let jumpvely = this.jumpPotential * Math.sin(jumpangle);
             let jumpvelx = this.jumpPotential * Math.cos(jumpangle);
+
+            // Draw resultant vel (debug)
+            const lineActor = new ex.Actor({
+                pos: this.getGlobalPos(),
+            })
+            lineActor.graphics.anchor = ex.Vector.Zero
+            lineActor.graphics.use(
+                new ex.Line({
+                    start: ex.vec(0, 0),
+                    end: ex.vec(jumpvelx, jumpvely),
+                    color: ex.Color.Green,
+                    thickness: 10,
+                })
+            )
+            engine.add(lineActor);
+
+
             this.vel.y = -jumpvely;
             this.xvel = jumpvelx;
             this.jumpPotential = 0;
