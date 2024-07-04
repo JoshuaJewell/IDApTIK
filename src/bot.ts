@@ -12,6 +12,14 @@ export class Bot extends ex.Actor {
     public attacking = 0;
     public jumpPotential = 0;
     public t = 0;
+
+    public str = 100;
+    public dex = 100;
+    public con = 100;
+    public int = 100;
+    public wil = 100;
+    public cha = 100;
+
     constructor(x: number, y: number) {
         super({
             name: 'Bot',
@@ -141,32 +149,42 @@ export class Bot extends ex.Actor {
         if (this.onGround) { // Doesn't kill xvel while in projectile motion
             this.xvel = 0;
         }
+        let speed = (1.6 * this.dex);
 
         // Player input
-        if (engine.input.keyboard.isHeld(ex.Input.Keys.X)) {
+
+        let attackkey = engine.input.keyboard.isHeld(ex.Input.Keys.X);
+        let sprintkey = engine.input.keyboard.isHeld(ex.Input.Keys.ShiftLeft);
+
+        let upkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Up) || engine.input.keyboard.isHeld(ex.Input.Keys.W));
+        let leftkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Left) || engine.input.keyboard.isHeld(ex.Input.Keys.A));
+        let downkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Down) || engine.input.keyboard.isHeld(ex.Input.Keys.S));
+        let rightkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Right) || engine.input.keyboard.isHeld(ex.Input.Keys.D));
+
+        if (attackkey) {
             this.attacking = 42;
         }
-
-        if (engine.input.keyboard.isHeld(ex.Input.Keys.Right) && this.onGround) {
-            this.xvel += 160;
-            this.facing = 2;
+        if (this.onGround) {
+            if (rightkey) {
+                this.xvel += speed;
+                this.facing = 2;
+            }
+            if (leftkey) {
+                this.xvel += -speed;
+                this.facing = 1;
+            }
+            if (downkey) {
+                this.xvel *= 0.5;
+                this.facing = -Math.abs(this.facing);
+            }
+            else if (sprintkey) {
+                this.xvel *= 2;
+            }
+            else {
+                this.facing = Math.abs(this.facing);
+            }
         }
-        if (engine.input.keyboard.isHeld(ex.Input.Keys.Left) && this.onGround) {
-            this.xvel += -160;
-            this.facing = 1;
-        }
-        if(engine.input.keyboard.isHeld(ex.Input.Keys.Down) && this.onGround) {
-            this.xvel *= 0.5;
-            this.facing = -Math.abs(this.facing);
-        }
-        else if (engine.input.keyboard.isHeld(ex.Input.Keys.ShiftLeft) && this.onGround) {
-            this.xvel *= 2;
-        }
-        else {
-            this.facing = Math.abs(this.facing);
-        }
-
-        if ((engine.input.keyboard.isHeld(ex.Input.Keys.Up) || this.jumpPotential > 0) && this.onGround) {
+        if ((upkey || this.jumpPotential > 0) && this.onGround) {
             let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
             let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
             let jumpangle = Math.atan2(rely, relx);
@@ -175,19 +193,20 @@ export class Bot extends ex.Actor {
             this.facing = (0.5 * relx / Math.abs(relx)) + 1.5;
             this.xvel = 0;
 
-            if (engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential < 500)) {
+            if (upkey && (this.jumpPotential < 500)) {
                 this.jumpPotential += 500;
             }
-            else if (!engine.input.keyboard.isHeld(ex.Input.Keys.Up) && (this.jumpPotential > 0)) {
+            else if (!upkey && (this.jumpPotential > 0)) {
                 this.vel.y = jumpvely + 10;
                 this.xvel = jumpvelx + 10;
                 this.jumpPotential = 0;
                 this.onGround = false;
             }
 
-            /*this.t += 0.0008;
-            let trajpointx = this.t * jumpvelx;
-            let trajpointy = (this.t * jumpvely) - (800 * (this.t^2));
+            // Trajectory drawing (WIP)
+            /*this.t += 0.02;
+            let trajpointx = (this.t * jumpvelx);
+            let trajpointy = ((2 * this.t) - (this.t^2));
 
             const lineActor = new ex.Actor({
                 pos: this.getGlobalPos(),
@@ -195,8 +214,8 @@ export class Bot extends ex.Actor {
             lineActor.graphics.anchor = ex.Vector.Zero;
             lineActor.graphics.use(
                 new ex.Line({
-                    start: ex.vec(trajpointx - 1, trajpointy - 1),
-                    end: ex.vec(trajpointx + 1, trajpointy + 1),
+                    start: ex.vec(trajpointx + 1, trajpointy + 1),
+                    end: ex.vec(trajpointx - 1, trajpointy - 1),
                     color: ex.Color.Black,
                     thickness: 2,
                 })
@@ -216,27 +235,27 @@ export class Bot extends ex.Actor {
                 this.graphics.use("idleright");
                 break;
             }
-            case 161: {
+            case speed + 1: {
                 this.graphics.use("left");
                 break;
             }
-            case 162: {
+            case speed + 2: {
                 this.graphics.use("right");
                 break;
             }
-            case 321: {
+            case (2 * speed) + 1: {
                 this.graphics.use("sprintleft");
                 break;
             }
-            case 322: {
+            case (2 * speed) + 2: {
                 this.graphics.use("sprintright");
                 break;
             }
-            case 79: {
+            case (0.5 * speed) - 1: {
                 this.graphics.use("crouchleft");
                 break;
             }
-            case 78: {
+            case (0.5 * speed) - 2: {
                 this.graphics.use("crouchright");
                 break;
             }
