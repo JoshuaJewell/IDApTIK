@@ -13,8 +13,6 @@ const jumpSound = require('../res/jump.wav');
 const hitSound = require('../res/hurt.wav');
 const gotEmSound = require('../res/gottem.wav');
 
-//levelSTLoop.loop = true;
-
 const Resources = {
     bot: new ex.ImageSource(botFile),
     botRed: new ex.ImageSource(botRedFile),
