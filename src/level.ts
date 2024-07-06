@@ -23,9 +23,9 @@ export class Level extends ex.Scene {
         const baddie = new Baddie(engine.halfDrawWidth - 200, 300 - 30, 1);
         const baddie2 = new Baddie(engine.halfDrawWidth + 200, 300 - 30, -1);
 
-        const npc = new NPC(400, 170);
+        const npc = new NPC(engine.halfDrawWidth + 100, engine.halfDrawHeight - 100);
         
-        const floor = new Floor(0, 300, 15, 1);
+        const floor = new Floor(0, 300, 18, 1);
         const otherFloor = new Floor(engine.halfDrawWidth + 50, 200, 5, 1);
 
         engine.add(actor);

@@ -4,8 +4,8 @@ import { Level } from './level';
 
 const engine = new ex.Engine({
     backgroundColor: ex.Color.fromHex('#efefef'),
-    width: 600,
-    height: 400,
+    //width: 1920,
+    //height: 1080,
     fixedUpdateFps: 60,
     // Turn off anti-aliasing for pixel art graphics
     antialiasing: false
