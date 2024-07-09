@@ -45,3 +45,6 @@ Ranged                      - lvl1: usage of personal firearms
 Scopaesthesia               - Given warning when becoming visible
 Smash                       - lvl1: can break through glass, desks, weak security objects
                               lvl2: can break weaker walls and heavier objects
+							  
+Ideas from Gunpoint community:
+@zanytobbs - If they make a sequel they should let you have the ability to cut a hole in the glass so you wouldn't have to jump through it, I know you have hushcracker but that would be a cool addition. 
