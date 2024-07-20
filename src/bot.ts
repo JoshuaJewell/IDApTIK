@@ -204,7 +204,7 @@ export class Bot extends ex.Actor {
             }
 
             // Trajectory drawing (WIP)
-            this.t = 0.5;
+            /*this.t = 0.5;
             let trajpointx = (this.t * jumpvelx);
             let trajpointy = ((this.t * jumpvely) + (Math.pow(this.t * jumpvely, 2)));
 
@@ -220,7 +220,7 @@ export class Bot extends ex.Actor {
                     thickness: 4,
                 })
             )
-            engine.add(lineActor);
+            engine.add(lineActor);*/
         }
 
         this.vel.x = this.xvel;
