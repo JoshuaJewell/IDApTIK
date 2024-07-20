@@ -206,7 +206,7 @@ export class Bot extends ex.Actor {
             // Trajectory drawing (WIP)
             this.t = 0.5;
             let trajpointx = (this.t * jumpvelx);
-            let trajpointy = ((this.t * jumpvely) + Math.pow(this.t, 20));
+            let trajpointy = ((this.t * jumpvely) + (Math.pow(this.t * jumpvely, 2)));
 
             const lineActor = new ex.Actor({
                 pos: this.getGlobalPos(),
