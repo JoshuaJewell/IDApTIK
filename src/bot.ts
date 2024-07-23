@@ -204,23 +204,26 @@ export class Bot extends ex.Actor {
             }
 
             // Trajectory drawing (WIP)
-            /*this.t = 0.5;
-            let trajpointx = (this.t * jumpvelx);
-            let trajpointy = ((this.t * jumpvely) + (Math.pow(this.t * jumpvely, 2)));
-
-            const lineActor = new ex.Actor({
-                pos: this.getGlobalPos(),
-            })
-            lineActor.graphics.anchor = ex.Vector.Zero;
-            lineActor.graphics.use(
-                new ex.Line({
-                    start: ex.vec(trajpointx - 2, trajpointy - 2),
-                    end: ex.vec(trajpointx + 2, trajpointy + 2),
-                    color: ex.Color.Black,
-                    thickness: 4,
+            this.t = 0.2;
+            for (let i = 0; i < 6; i++) {
+                this.t += 0.1;
+                let trajpointx = (this.t * jumpvelx);
+                let trajpointy = ((this.t * jumpvely) + (400 * (this.t ** 2)));
+    
+                const lineActor = new ex.Actor({
+                    pos: this.getGlobalPos(),
                 })
-            )
-            engine.add(lineActor);*/
+                lineActor.graphics.anchor = ex.Vector.Zero;
+                lineActor.graphics.use(
+                    new ex.Line({
+                        start: ex.vec(trajpointx - 2, trajpointy - 2),
+                        end: ex.vec(trajpointx + 2, trajpointy + 2),
+                        color: ex.Color.Black,
+                        thickness: 4,
+                    })
+                )
+                engine.add(lineActor);
+            }
         }
 
         this.vel.x = this.xvel;
