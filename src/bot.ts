@@ -20,6 +20,8 @@ export class Bot extends ex.Actor {
     public wil = 100;
     public cha = 100;
 
+    private trajectoryActors: ex.Actor[] = [];
+
     constructor(x: number, y: number) {
         super({
             name: 'Bot',
@@ -150,6 +152,10 @@ export class Bot extends ex.Actor {
             this.xvel = 0;
         }
         let speed = (1.6 * this.dex);
+        for (const actor of this.trajectoryActors) {
+            engine.remove(actor);
+        }
+        this.trajectoryActors = [];
 
         // Player input
 
@@ -194,7 +200,7 @@ export class Bot extends ex.Actor {
             this.xvel = 0;
 
             if (upkey && (this.jumpPotential < 500)) {
-                this.jumpPotential += 500;
+                this.jumpPotential += 10;
             }
             else if (!upkey && (this.jumpPotential > 0)) {
                 this.vel.y = jumpvely + 10;
@@ -204,9 +210,8 @@ export class Bot extends ex.Actor {
             }
 
             // Trajectory drawing (WIP)
-            this.t = 0.2;
-            for (let i = 0; i < 6; i++) {
-                this.t += 0.1;
+            this.t = 0.1;
+            for (let i = 0; i < 8; i++) {
                 let trajpointx = (this.t * jumpvelx);
                 let trajpointy = ((this.t * jumpvely) + (400 * (this.t ** 2)));
     
@@ -216,13 +221,15 @@ export class Bot extends ex.Actor {
                 lineActor.graphics.anchor = ex.Vector.Zero;
                 lineActor.graphics.use(
                     new ex.Line({
-                        start: ex.vec(trajpointx - 2, trajpointy - 2),
-                        end: ex.vec(trajpointx + 2, trajpointy + 2),
+                        start: ex.vec(trajpointx, trajpointy - 1),
+                        end: ex.vec(trajpointx, trajpointy + 1),
                         color: ex.Color.Black,
-                        thickness: 4,
+                        thickness: 2,
                     })
                 )
                 engine.add(lineActor);
+                this.trajectoryActors.push(lineActor);
+                this.t += 0.1;
             }
         }
 
