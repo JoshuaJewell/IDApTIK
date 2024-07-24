@@ -11,7 +11,6 @@ export class Bot extends ex.Actor {
     public hurtTime: number = 0;
     public attacking = 0;
     public jumpPotential = 0;
-    public t = 0;
 
     public str = 100;
     public dex = 100;
@@ -119,11 +118,12 @@ export class Bot extends ex.Actor {
         if (evt.side === ex.Side.Bottom) {
             this.onGround = true;
         }
-
-        // Bot has collided on the side, display hurt animation (effectively disabled due to other anims taking priority and bots immediately dying)
-        if ((evt.side === ex.Side.Left ||
-             evt.side === ex.Side.Right) &&
-             evt.other instanceof Baddie) {
+        let sideevt = (evt.side === ex.Side.Left) || (evt.side === ex.Side.Right);
+        if (sideevt) {
+            this.xvel = 0;
+        }
+        // Bot has collided on the side, display hurt animation (epistasis)
+        if (sideevt && evt.other instanceof Baddie) {
             if (this.vel.x < 0 && !this.hurt) {
                 this.graphics.use("hurtleft");
             } 
@@ -146,19 +146,21 @@ export class Bot extends ex.Actor {
             }
         }
 
-        // Reset vars
-        
+        // Reset vars 
         if (this.onGround) { // Doesn't kill xvel while in projectile motion
-            this.xvel = 0;
+            this.xvel *= 0.9;
         }
-        let speed = (1.6 * this.dex);
+        let speed = 1.6 * this.dex;
+        let maxjump = 5 * this.str;
+        let jumpacc = 0.1 * this.dex;
+
+        // Remove trajectory drawing
         for (const actor of this.trajectoryActors) {
             engine.remove(actor);
         }
         this.trajectoryActors = [];
 
         // Player input
-
         let attackkey = engine.input.keyboard.isHeld(ex.Input.Keys.X);
         let sprintkey = engine.input.keyboard.isHeld(ex.Input.Keys.ShiftLeft);
 
@@ -172,11 +174,11 @@ export class Bot extends ex.Actor {
         }
         if (this.onGround) {
             if (rightkey) {
-                this.xvel += speed;
+                this.xvel = speed;
                 this.facing = 2;
             }
             if (leftkey) {
-                this.xvel += -speed;
+                this.xvel = -speed;
                 this.facing = 1;
             }
             if (downkey) {
@@ -193,14 +195,26 @@ export class Bot extends ex.Actor {
         if ((upkey || this.jumpPotential > 0) && this.onGround) {
             let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
             let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
-            let jumpangle = Math.atan2(rely, relx);
-            let jumpvely = this.jumpPotential * Math.sin(jumpangle);
-            let jumpvelx = this.jumpPotential * Math.cos(jumpangle);
             this.facing = (0.5 * relx / Math.abs(relx)) + 1.5;
             this.xvel = 0;
 
-            if (upkey && (this.jumpPotential < 500)) {
-                this.jumpPotential += 10;
+            let jumpangle = Math.atan2(rely, relx);
+            if (jumpangle > Math.PI / 4 && jumpangle < 3 * Math.PI / 4) {
+                if (jumpangle > Math.PI / 2) {
+                    jumpangle = 3 * Math.PI / 4;
+                }
+                else {
+                    jumpangle = Math.PI / 4;
+                }
+            }
+
+            let jumpprop = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / 100), maxjump);
+            let jumpvely = jumpprop * Math.sin(jumpangle);
+            let jumpvelx = jumpprop * Math.cos(jumpangle);
+
+
+            if (upkey && (this.jumpPotential < maxjump)) {
+                this.jumpPotential += jumpacc;
             }
             else if (!upkey && (this.jumpPotential > 0)) {
                 this.vel.y = jumpvely + 10;
@@ -209,27 +223,30 @@ export class Bot extends ex.Actor {
                 this.onGround = false;
             }
 
-            // Trajectory drawing (WIP)
-            this.t = 0.1;
-            for (let i = 0; i < 8; i++) {
-                let trajpointx = (this.t * jumpvelx);
-                let trajpointy = ((this.t * jumpvely) + (400 * (this.t ** 2)));
+            // Trajectory drawing
+            let t= 0.1;
+            let trajpoints = Math.round(jumpprop / 50);
+            for (let i = 0; i < trajpoints; i++) {
+                let trajpointx = (t* jumpvelx);
+                let trajpointy = ((t* jumpvely) + (400 * (t** 2)));
     
                 const lineActor = new ex.Actor({
                     pos: this.getGlobalPos(),
                 })
                 lineActor.graphics.anchor = ex.Vector.Zero;
+                lineActor.z = -1;
+                
                 lineActor.graphics.use(
                     new ex.Line({
-                        start: ex.vec(trajpointx, trajpointy - 1),
-                        end: ex.vec(trajpointx, trajpointy + 1),
-                        color: ex.Color.Black,
-                        thickness: 2,
+                        start: ex.vec(trajpointx, trajpointy - 1.5),
+                        end: ex.vec(trajpointx, trajpointy + 1.5),
+                        color: new ex.Color(0, 0, 0, 1 / (i + 1)),
+                        thickness: 3,
                     })
                 )
                 engine.add(lineActor);
                 this.trajectoryActors.push(lineActor);
-                this.t += 0.1;
+                t+= 0.1;
             }
         }
 
