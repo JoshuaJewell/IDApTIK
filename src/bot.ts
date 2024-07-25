@@ -3,15 +3,19 @@ import { botSpriteSheet, Resources, newBotSpriteSheet } from './resources';
 import { Baddie } from './baddie';
 
 export class Bot extends ex.Actor {
+    // Gameplay variables
     public onGround = true;
-    public jumped = false;
     public hurt = false;
-    public xvel = 0;
-    public facing = 1; // 1 Left, 2 Right, -1 Leftdown, -2 Rightdown
-    public hurtTime: number = 0;
+    public facing = 1; // 1 Left, 2 Right, (-1 Leftdown, -2 Rightdown - legacy)
+    public hurtTime = 0;
     public attacking = 0;
     public jumpPotential = 0;
 
+    // Graphics variables
+    public timeAlive = 0; // Increments every PreUpdate, currently only for trajpoint flicker effect
+    private trajectoryActors: ex.Actor[] = []; // Array to store trajectory actors to kill
+
+    // Attribute variables, will likely be held outside player.ts at some point
     public str = 100;
     public dex = 100;
     public con = 100;
@@ -19,8 +23,30 @@ export class Bot extends ex.Actor {
     public wil = 100;
     public cha = 100;
 
-    private trajectoryActors: ex.Actor[] = [];
+    // Gameplay constants
+    private static readonly HURT_TIME = 1000; // Legacy
+    private static readonly FRICTION = 0.75;
+    private static readonly FRICTION_THRESHOLD = 0.05; // Stop character completely when xvel is lower than this value
+    private static readonly SPEED_MULT = 1.6;
+    private static readonly MAXJMP_MULT = 5;
+    private static readonly JMPACC_MULT = 0.1;
+    private static readonly CROUCH_MULT = 0.5;
+    private static readonly SPRINT_MULT = 2;
+    private static readonly DISPLACEMENT_DIVISOR = 100; // Lower values increase sensitivity of cursor-Player displacement on jump speed
 
+    // Graphics constants, may need to be adjustable in future settings menu
+    private static readonly ATTACK_FRAMES = 42; // For animation
+    private static readonly TRAJ_LENGTH = 500; // Lower values are longer
+    private static readonly T_INC = 0.06; // Frequency of trajpoints, <0.02 has significant performance issues
+    private static readonly TRAJPOINTS_DIVISOR = Bot.T_INC * Bot.TRAJ_LENGTH; 
+    private static readonly MIN_POINT_THICKNESS = 2.75; // Not actual minimum, it was at some stage before the drawing formula was updated, I suspect actual minimum at POINT_THICKNESS difference of 0.75 is ~1.5
+    private static readonly MAX_POINT_THICKNESS = 3.5; // Not actual maximum, it was at some stage before the drawing formula was updated, I suspect actual maximum at POINT_THICKNESS difference of 0.75 is ~4
+    private static readonly POINT_FLICKER_SPEED = 0.1; // Higher values increase flicker
+    private static readonly G = 400; // Gravitational constant, empirical
+    private static readonly ANGLE_JMPLIM_E = Math.PI / 4; // South-East, needs increasing
+    private static readonly ANGLE_JMPLIM_W = 3 * Math.PI / 4; // South-West, needs decreasing
+
+    // Hitbox instantiation
     constructor(x: number, y: number) {
         super({
             name: 'Bot',
@@ -33,96 +59,63 @@ export class Bot extends ex.Actor {
 
     // OnInitialize is called before the 1st actor update
     onInitialize(engine: ex.Engine) {
-        // Initialise actor
-        
-        // Legacy visuals
-        const hurtleft = ex.Animation.fromSpriteSheet(botSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
-        hurtleft.scale = new ex.Vector(2, 2);
-        hurtleft.flipHorizontal = true;
+        // Register all animations
+        function createAnimation(
+            this: ex.Actor,
+            name: string,
+            spriteSheet: ex.SpriteSheet,
+            frames: number[],
+            speed: number,
+            scale: ex.Vector = new ex.Vector(2, 2),
+            flipHorizontal: boolean = false,
+            createPair: boolean = false
+        ): void {
+            if (createPair) {
+                createAnimation.call(this, `${name}right`, spriteSheet, frames, speed, scale);
+                createAnimation.call(this, `${name}left`, spriteSheet, frames, speed, scale, true);
+            }
+            else {
+                const animation = ex.Animation.fromSpriteSheet(spriteSheet, frames, speed);
+                animation.scale = scale;
+                if (flipHorizontal) {
+                    animation.flipHorizontal = true;
+                }
+                this.graphics.add(name, animation);
+            }
+        }
+        const createAnimationPair = (name: string, spriteSheet: ex.SpriteSheet, frames: number[], speed: number) => {
+            createAnimation.call(this, name, spriteSheet, frames, speed, undefined, false, true);
+        }
+  
+        // Legacy
+        createAnimationPair("hurt", botSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
 
-        const hurtright = ex.Animation.fromSpriteSheet(botSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
-        hurtright.scale = new ex.Vector(2, 2);
-
-        // New visuals
-        const idleright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
-        idleright.scale = new ex.Vector(2, 2);
-
-        const idleleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [0, 1, 8,9, 8, 1], 200);
-        idleleft.scale = new ex.Vector(2, 2);
-        idleleft.flipHorizontal = true;
-
-        const right = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [16, 17, 18, 19], 100);
-        right.scale = new ex.Vector(2, 2);
-
-        const left = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [16, 17, 18, 19], 100);
-        left.scale = new ex.Vector(2, 2);
-        left.flipHorizontal = true;
-
-        const sprintright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
-        sprintright.scale = new ex.Vector(2, 2);
-
-        const sprintleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
-        sprintleft.scale = new ex.Vector(2, 2);
-        sprintleft.flipHorizontal = true;
-
-        const crouchright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [34, 35, 36], 100);
-        crouchright.scale = new ex.Vector(2, 2);
-
-        const crouchleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [34, 35, 36], 100);
-        crouchleft.scale = new ex.Vector(2, 2);
-        crouchleft.flipHorizontal = true;
-
-        const attackright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
-        attackright.scale = new ex.Vector(2, 2);
-
-        const attackleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
-        attackleft.scale = new ex.Vector(2, 2);
-        attackleft.flipHorizontal = true;
-
-        const jumpright = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
-        jumpright.scale = new ex.Vector(2, 2);
-
-        const jumpleft = ex.Animation.fromSpriteSheet(newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
-        jumpleft.scale = new ex.Vector(2, 2);
-        jumpleft.flipHorizontal = true;
-
-        // Register animations with actor
-        this.graphics.add("hurtleft", hurtleft);
-        this.graphics.add("hurtright", hurtright);
-
-        this.graphics.add("idleleft", idleleft);
-        this.graphics.add("idleright", idleright);
-        
-        this.graphics.add("left", left);
-        this.graphics.add("right", right);
-        
-        this.graphics.add("sprintleft", sprintleft);
-        this.graphics.add("sprintright", sprintright);
-
-        this.graphics.add("crouchleft", crouchleft);
-        this.graphics.add("crouchright", crouchright);
-
-        this.graphics.add("attackleft", attackleft);
-        this.graphics.add("attackright", attackright);
-
-        this.graphics.add("jumpleft", jumpleft);
-        this.graphics.add("jumpright", jumpright);
-
+        // New
+        createAnimationPair("idle", newBotSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
+        createAnimationPair("walk", newBotSpriteSheet, [16, 17, 18, 19], 100);
+        createAnimationPair("crouch", newBotSpriteSheet, [34, 35, 36], 200);
+        createAnimationPair("sprint", newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
+        createAnimationPair("attack", newBotSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
+        createAnimationPair("jump", newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
+   
         // onPostCollision is an event, not a lifecycle meaning it can be subscribed to by other things
         this.on('postcollision', (evt) => this.onPostCollision(evt));
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        // Bot has collided with its Top of another collider
+        // Player has collided with the Top of another collider
         console.log(evt.other.name);
         if (evt.side === ex.Side.Bottom) {
             this.onGround = true;
         }
+
+        // Halt xvel when colliding with a side (improves quality of projectile motion)
         let sideevt = (evt.side === ex.Side.Left) || (evt.side === ex.Side.Right);
         if (sideevt) {
-            this.xvel = 0;
+            this.vel.x = 0;
         }
-        // Bot has collided on the side, display hurt animation (epistasis)
+
+        // Player collision with enemy, display hurt animation (epistasis)
         if (sideevt && evt.other instanceof Baddie) {
             if (this.vel.x < 0 && !this.hurt) {
                 this.graphics.use("hurtleft");
@@ -131,7 +124,7 @@ export class Bot extends ex.Actor {
                 this.graphics.use("hurtright");
             }
             this.hurt = true;
-            this.hurtTime = 1000;
+            this.hurtTime = Bot.HURT_TIME;
             Resources.hit.play(.1);
         }
     }
@@ -146,161 +139,160 @@ export class Bot extends ex.Actor {
             }
         }
 
-        // Reset vars 
-        if (this.onGround) { // Doesn't kill xvel while in projectile motion
-            this.xvel *= 0.9;
+        // Slow Player to stop
+        if (this.onGround) {
+            this.vel.x *= Bot.FRICTION;
+            if (Math.abs(this.vel.x) < Bot.FRICTION_THRESHOLD) {
+                this.vel.x = 0;
+            }
         }
-        let speed = 1.6 * this.dex;
-        let maxjump = 5 * this.str;
-        let jumpacc = 0.1 * this.dex;
 
-        // Remove trajectory drawing
+        // Remove trajpoints
         for (const actor of this.trajectoryActors) {
             engine.remove(actor);
         }
         this.trajectoryActors = [];
 
+        // Prepare attribute-influenced motion vars
+        let speed = Bot.SPEED_MULT * this.dex;
+        let jumpacc = Bot.JMPACC_MULT * this.dex;
+        let maxjump = Bot.MAXJMP_MULT * this.str;
+
         // Player input
         let attackkey = engine.input.keyboard.isHeld(ex.Input.Keys.X);
         let sprintkey = engine.input.keyboard.isHeld(ex.Input.Keys.ShiftLeft);
-
-        let upkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Up) || engine.input.keyboard.isHeld(ex.Input.Keys.W));
+        let upkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Up) || engine.input.keyboard.isHeld(ex.Input.Keys.W)); // upkey currently for jump, want to replace with mousedown
         let leftkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Left) || engine.input.keyboard.isHeld(ex.Input.Keys.A));
-        let downkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Down) || engine.input.keyboard.isHeld(ex.Input.Keys.S));
+        let crouchkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Down) || engine.input.keyboard.isHeld(ex.Input.Keys.S)) || engine.input.keyboard.isHeld(ex.Input.Keys.ControlLeft);
         let rightkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Right) || engine.input.keyboard.isHeld(ex.Input.Keys.D));
 
+        // Everything but jump, how serene and well laid out and...
         if (attackkey) {
-            this.attacking = 42;
+            this.attacking = Bot.ATTACK_FRAMES;
         }
         if (this.onGround) {
-            if (rightkey) {
-                this.xvel = speed;
-                this.facing = 2;
-            }
-            if (leftkey) {
-                this.xvel = -speed;
-                this.facing = 1;
-            }
-            if (downkey) {
-                this.xvel *= 0.5;
-                this.facing = -Math.abs(this.facing);
-            }
-            else if (sprintkey) {
-                this.xvel *= 2;
+            if (this.facing == 1) {
+                this.graphics.use("idleleft");
             }
             else {
-                this.facing = Math.abs(this.facing);
+                this.graphics.use("idleright");
+            } 
+            if (leftkey) {
+                this.vel.x = -speed;
+                this.facing = 1;
+                this.graphics.use("walkleft");
+                if (sprintkey) {
+                    this.vel.x *= Bot.SPRINT_MULT;
+                    this.graphics.use("sprintleft");
+                }
             }
-        }
-        if ((upkey || this.jumpPotential > 0) && this.onGround) {
-            let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
-            let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
-            this.facing = (0.5 * relx / Math.abs(relx)) + 1.5;
-            this.xvel = 0;
-
-            let jumpangle = Math.atan2(rely, relx);
-            if (jumpangle > Math.PI / 4 && jumpangle < 3 * Math.PI / 4) {
-                if (jumpangle > Math.PI / 2) {
-                    jumpangle = 3 * Math.PI / 4;
+            if (rightkey) {
+                this.vel.x = speed;
+                this.facing = 2;
+                this.graphics.use("walkright");
+                if (sprintkey) {
+                    this.vel.x *= Bot.SPRINT_MULT;
+                    this.graphics.use("sprintright");
+                }
+            }
+            if (!sprintkey && crouchkey) {
+                this.vel.x *= Bot.CROUCH_MULT;
+                if (this.facing == 1) {
+                    this.graphics.use("crouchleft");
                 }
                 else {
-                    jumpangle = Math.PI / 4;
+                    this.graphics.use("crouchright");
+                }
+            }
+        }
+
+        // ...oh my god what is this??? (Jump)
+        if ((upkey || this.jumpPotential > 0) && this.onGround) {
+            this.vel.x = 0; // Lock Player position while aiming
+
+            // Find pointer-Player difference
+            let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
+            let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
+
+            // Determine jump angle (exclude some range below Player)
+            let jumpangle = Math.atan2(rely, relx);
+            if (jumpangle > Bot.ANGLE_JMPLIM_E && jumpangle < Bot.ANGLE_JMPLIM_W) {
+                if (jumpangle > Math.PI / 2) {
+                    jumpangle = Bot.ANGLE_JMPLIM_W;
+                }
+                else {
+                    jumpangle = Bot.ANGLE_JMPLIM_E;
                 }
             }
 
-            let jumpprop = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / 100), maxjump);
-            let jumpvely = jumpprop * Math.sin(jumpangle);
-            let jumpvelx = jumpprop * Math.cos(jumpangle);
+            // Determine magnitude and velocity of jump based on displacement of pointer 
+            let jumpmag = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / Bot.DISPLACEMENT_DIVISOR), maxjump);
+            let jumpvely = jumpmag * Math.sin(jumpangle);
+            let jumpvelx = jumpmag * Math.cos(jumpangle);
 
+            // Match Player facing with mouse facing, apply animation
+            this.facing = (0.5 * relx / Math.abs(relx)) + 1.5; // -ve relx = 1 (left), +ve relx = 2 (right)
+            if (this.facing == 1) {
+                this.graphics.use("crouchleft");
+            }
+            else {
+                this.graphics.use("crouchright");
+            }
 
+            // Release jump or continue increasing potential
             if (upkey && (this.jumpPotential < maxjump)) {
                 this.jumpPotential += jumpacc;
             }
             else if (!upkey && (this.jumpPotential > 0)) {
-                this.vel.y = jumpvely + 10;
-                this.xvel = jumpvelx + 10;
+                if (this.facing == 1) {
+                    this.graphics.use("jumpleft");
+                }
+                else {
+                    this.graphics.use("jumpright");
+                }
+                this.vel.y = jumpvely;
+                this.vel.x = jumpvelx;
                 this.jumpPotential = 0;
                 this.onGround = false;
             }
 
             // Trajectory drawing
-            let t= 0.1;
-            let trajpoints = Math.round(jumpprop / 50);
+            let t = Bot.T_INC;
+            let trajpoints = Math.round(jumpmag / Bot.TRAJPOINTS_DIVISOR);
             for (let i = 0; i < trajpoints; i++) {
-                let trajpointx = (t* jumpvelx);
-                let trajpointy = ((t* jumpvely) + (400 * (t** 2)));
-    
+                // Find coords on parametric equation
+                let trajpointx = (t * jumpvelx);
+                let trajpointy = ((t * jumpvely) + (Bot.G * (t ** 2)));
+                
+                // Render coords
                 const lineActor = new ex.Actor({
                     pos: this.getGlobalPos(),
-                })
+                });
                 lineActor.graphics.anchor = ex.Vector.Zero;
-                lineActor.z = -1;
-                
+                lineActor.z = -1; // Almost creates the illusion that these currently ignore all obstructions
+                let pointthickness = (
+                    Bot.MIN_POINT_THICKNESS +
+                    (Bot.MAX_POINT_THICKNESS - Bot.MIN_POINT_THICKNESS) *
+                    (Math.cos(Bot.POINT_FLICKER_SPEED * (this.timeAlive - i))) +
+                    0.5 * Math.sin(2 * Bot.POINT_FLICKER_SPEED * (this.timeAlive - i))
+                );
                 lineActor.graphics.use(
                     new ex.Line({
-                        start: ex.vec(trajpointx, trajpointy - 1.5),
-                        end: ex.vec(trajpointx, trajpointy + 1.5),
+                        start: ex.vec(trajpointx, trajpointy - (0.5 * pointthickness)),
+                        end: ex.vec(trajpointx, trajpointy + (0.5 * pointthickness)),
                         color: new ex.Color(0, 0, 0, 1 / (i + 1)),
-                        thickness: 3,
+                        thickness: pointthickness,
                     })
-                )
+                );
                 engine.add(lineActor);
                 this.trajectoryActors.push(lineActor);
-                t+= 0.1;
+                t += Bot.T_INC;
             }
         }
 
-        this.vel.x = this.xvel;
-
-        // Apply animations
-        switch (Math.abs(this.xvel) + this.facing) {
-            case 1: {
-                this.graphics.use("idleleft");
-                break;
-            }
-            case 2: {
-                this.graphics.use("idleright");
-                break;
-            }
-            case speed + 1: {
-                this.graphics.use("left");
-                break;
-            }
-            case speed + 2: {
-                this.graphics.use("right");
-                break;
-            }
-            case (2 * speed) + 1: {
-                this.graphics.use("sprintleft");
-                break;
-            }
-            case (2 * speed) + 2: {
-                this.graphics.use("sprintright");
-                break;
-            }
-            case (0.5 * speed) - 1: {
-                this.graphics.use("crouchleft");
-                break;
-            }
-            case (0.5 * speed) - 2: {
-                this.graphics.use("crouchright");
-                break;
-            }
-            case -1: {
-                this.graphics.use("crouchleft");
-                break;
-            }
-            case -2: {
-                this.graphics.use("crouchright");
-                break;
-            }
-            //default: {
-            //    this.graphics.use("jumpright")
-            //}
-        }
-
+        // Manage attack animation, at end to overwrite any motion animation
         if (this.attacking > 0) { // Attack anim implementation needs rework, but not immediately important as placeholder art anyway
-            if (this.facing === 1 || this.facing === -1) {
+            if (this.facing == 1) {
                 this.graphics.use("attackleft");
             }
             else {
@@ -308,5 +300,7 @@ export class Bot extends ex.Actor {
             }
             this.attacking -= 1;
         }
+
+        this.timeAlive += 1;
     }
 }
