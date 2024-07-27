@@ -33,13 +33,10 @@ export class Player extends ex.Actor {
     private hurtTime = 0;
     private attacking = 0;
     private jumpPotential = 0;
-    private attackWindowStart = 20; // Attack window will depend on animation and weapon types...will absolutely need rework
-    private attackWindowDuration = 40;
-    private attackWindowEnd = this.attackWindowDuration - this.attackWindowStart;
 
     // Gameplay methods
     public isAttacking(): boolean {
-        return this.attacking >= this.attackWindowStart && this.attacking <= this.attackWindowEnd;
+        return this.attacking > 0;
     }
 
     // Graphics variables

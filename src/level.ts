@@ -14,6 +14,7 @@ export class Level extends ex.Scene {
 
         // Create collision groups for the game
         ex.CollisionGroupManager.create("player");
+        ex.CollisionGroupManager.create("neutral");
         ex.CollisionGroupManager.create("enemy");
         ex.CollisionGroupManager.create("floor");
 
