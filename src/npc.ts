@@ -1,5 +1,5 @@
 import * as ex from 'excalibur';
-import { botRedSpriteSheet, Resources, npcSprite } from './resources';
+import { playerRedSpriteSheet, Resources, npcSprite } from './resources';
 
 export class NPC extends ex.Actor {
     public onGround = true;
@@ -22,20 +22,20 @@ export class NPC extends ex.Actor {
         this.z = -1;
 
         // Setup visuals
-        const hurtleft = ex.Animation.fromSpriteSheet(botRedSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
+        const hurtleft = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
         hurtleft.scale = new ex.Vector(2, 2);
 
-        const hurtright = ex.Animation.fromSpriteSheet(botRedSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
+        const hurtright = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
         hurtright.scale = new ex.Vector(2, 2);
         hurtright.flipHorizontal = true;
 
-        const idle = ex.Animation.fromSpriteSheet(botRedSpriteSheet, [2, 3], 800);
+        const idle = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [2, 3], 800);
         idle.scale = new ex.Vector(2, 2);
 
-        const left = ex.Animation.fromSpriteSheet(botRedSpriteSheet, [3, 4, 5, 6, 7], 100);
+        const left = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [3, 4, 5, 6, 7], 100);
         left.scale = new ex.Vector(2, 2);
 
-        const right = ex.Animation.fromSpriteSheet(botRedSpriteSheet, [3, 4, 5, 6, 7], 100);
+        const right = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [3, 4, 5, 6, 7], 100);
         right.scale = new ex.Vector(2, 2);
         right.flipHorizontal = true;
 

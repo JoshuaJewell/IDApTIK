@@ -1,11 +1,10 @@
 import * as ex from 'excalibur';
 
-const botFile = require('../res/excalibot.png');
-const botRedFile = require('../res/excalibot-red.png');
+const playerFile = require('../res/HPCHAR.png');
+const playerRedFile = require('../res/excalibot-red.png');
 const baddieFile = require('../res/baddie.png');
 const blockFile = require('../res/block.png');
 const npcFile = require('../res/npc.png');
-const newBotFile = require('../res/HPCHAR.png');
 
 const levelSTIntro = require('../res/BreakbeatSax-intro.wav')
 const levelSTLoop = require('../res/BreakbeatSax-loop.wav')
@@ -14,12 +13,11 @@ const hitSound = require('../res/hurt.wav');
 const gotEmSound = require('../res/gottem.wav');
 
 const Resources = {
-    bot: new ex.ImageSource(botFile),
-    botRed: new ex.ImageSource(botRedFile),
+    player: new ex.ImageSource(playerFile),
+    playerRed: new ex.ImageSource(playerRedFile),
     baddie: new ex.ImageSource(baddieFile),
     block: new ex.ImageSource(blockFile),
     npc: new ex.ImageSource(npcFile),
-    newBot: new ex.ImageSource(newBotFile),
     
     levelSTIntro: new ex.Sound(levelSTIntro),
     levelSTLoop: new ex.Sound(levelSTLoop),
@@ -30,17 +28,8 @@ const Resources = {
 
 const loader = new ex.Loader();
 
-const botSpriteSheet = ex.SpriteSheet.fromImageSource({
-    image:Resources.bot, 
-    grid: { 
-        columns: 8,
-        rows: 1, 
-        spriteWidth: 32,
-        spriteHeight: 32
-    }
-});
-const botRedSpriteSheet = ex.SpriteSheet.fromImageSource({
-    image: Resources.botRed,
+const playerRedSpriteSheet = ex.SpriteSheet.fromImageSource({
+    image: Resources.playerRed,
     grid: {
         columns: 8, 
         rows: 1,
@@ -57,8 +46,8 @@ const baddieSpriteSheet = ex.SpriteSheet.fromImageSource({
         spriteHeight: 32
     }
 });
-const newBotSpriteSheet = ex.SpriteSheet.fromImageSource({
-    image: Resources.newBot,
+const playerSpriteSheet = ex.SpriteSheet.fromImageSource({
+    image: Resources.player,
     grid: {
         columns: 8,
         rows: 9,
@@ -73,4 +62,4 @@ for (const res in Resources) {
     loader.addResource((Resources as any)[res]);
 }
 
-export { Resources, loader, botSpriteSheet, botRedSpriteSheet, baddieSpriteSheet, blockSprite, npcSprite, newBotSpriteSheet }
+export { Resources, loader, playerSpriteSheet, playerRedSpriteSheet, baddieSpriteSheet, blockSprite, npcSprite }

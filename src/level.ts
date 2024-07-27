@@ -1,6 +1,6 @@
 import * as ex from 'excalibur';
 import { Baddie } from './baddie';
-import { Bot } from './bot';
+import { Player } from './player';
 import { Floor } from './floor';
 import { NPC } from './npc';
 import { Resources } from './resources';
@@ -18,7 +18,7 @@ export class Level extends ex.Scene {
         ex.CollisionGroupManager.create("floor");
 
         // Compose actors in scene
-        const actor = new Bot(engine.halfDrawWidth + 100, engine.halfDrawHeight - 100);
+        const actor = new Player(engine.halfDrawWidth + 100, engine.halfDrawHeight - 100);
 
         const baddie = new Baddie(engine.halfDrawWidth - 200, 300 - 30, 1);
         const baddie2 = new Baddie(engine.halfDrawWidth + 200, 300 - 30, -1);
