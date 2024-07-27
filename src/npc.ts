@@ -1,5 +1,7 @@
 import * as ex from 'excalibur';
 import { playerRedSpriteSheet, Resources, npcSprite } from './resources';
+import { Player } from './player';
+let player:Player = new Player(0, 0);
 
 export class NPC extends ex.Actor {
     public onGround = true;
@@ -9,7 +11,7 @@ export class NPC extends ex.Actor {
         super({
             pos: new ex.Vector(x, y),
             collisionType: ex.CollisionType.Active,
-            collisionGroup: ex.CollisionGroupManager.groupByName("player"),
+            collisionGroup: ex.CollisionGroupManager.groupByName("neutral"),
             collider: ex.Shape.Box(32, 50, ex.Vector.Half, ex.vec(0, 3))
         });
     }
@@ -62,6 +64,22 @@ export class NPC extends ex.Actor {
             npcSprite.draw(ctx, -10, -100);
         }
 
+        this.on('postcollision', (evt) => this.onPostCollision(evt));
+    }
+
+    onPostCollision(evt: ex.PostCollisionEvent) {
+        if (evt.other instanceof Player && (evt.other.isAttacking())) {
+            Resources.gotEm.play(.1);
+            // Clear patrolling
+            this.actions.clearActions();
+            // Remove ability to collide
+            this.body.collisionType = ex.CollisionType.PreventCollision;
+
+            // Launch into air with rotation
+            this.vel = new ex.Vector(0, -300);
+            this.acc = ex.Physics.acc;
+            this.angularVelocity = 2;
+        }
     }
 
     onPostUpdate(engine: ex.Engine, delta: number) {
