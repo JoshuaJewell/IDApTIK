@@ -1,8 +1,8 @@
 import * as ex from 'excalibur';
-import { botSpriteSheet, Resources, newBotSpriteSheet } from './resources';
+import { playerSpriteSheet, Resources } from './resources';
 import { Baddie } from './baddie';
 
-export class Bot extends ex.Actor {
+export class Player extends ex.Actor {
     // Gameplay constants
     private static readonly HURT_TIME = 1000; // Legacy
     private static readonly FRICTION = 0.75;
@@ -18,7 +18,7 @@ export class Bot extends ex.Actor {
     private static readonly ATTACK_FRAMES = 42; // For animation
     private static readonly TRAJ_LENGTH = 500; // Lower values are longer
     private static readonly T_INC = 0.06; // Frequency of trajpoints, <0.02 has significant performance issues
-    private static readonly TRAJPOINTS_DIVISOR = Bot.T_INC * Bot.TRAJ_LENGTH; 
+    private static readonly TRAJPOINTS_DIVISOR = Player.T_INC * Player.TRAJ_LENGTH; 
     private static readonly MIN_POINT_THICKNESS = 2.75; // Not actual minimum, it was at some stage before the drawing formula was updated, I suspect actual minimum at POINT_THICKNESS difference of 0.75 is ~1.5
     private static readonly MAX_POINT_THICKNESS = 3.5; // Not actual maximum, it was at some stage before the drawing formula was updated, I suspect actual maximum at POINT_THICKNESS difference of 0.75 is ~4
     private static readonly POINT_FLICKER_SPEED = 0.1; // Higher values increase flicker
@@ -27,15 +27,15 @@ export class Bot extends ex.Actor {
     private static readonly ANGLE_JMPLIM_W = 3 * Math.PI / 4; // South-West, needs decreasing
 
     // Gameplay variables
-    public onGround = true;
-    public hurt = false;
-    public facing = 1; // 1 Left, 2 Right, (-1 Leftdown, -2 Rightdown - legacy)
-    public hurtTime = 0;
-    public attacking = 0;
-    public jumpPotential = 0;
-    public attackWindowStart = 20; // Attack window will depend on animation and weapon types...will absolutely need rework
-    public attackWindowDuration = 40;
-    public attackWindowEnd = this.attackWindowDuration - this.attackWindowStart;
+    private onGround = true;
+    private hurt = false;
+    private facing = 1; // 1 Left, 2 Right, (-1 Leftdown, -2 Rightdown - legacy)
+    private hurtTime = 0;
+    private attacking = 0;
+    private jumpPotential = 0;
+    private attackWindowStart = 20; // Attack window will depend on animation and weapon types...will absolutely need rework
+    private attackWindowDuration = 40;
+    private attackWindowEnd = this.attackWindowDuration - this.attackWindowStart;
 
     // Gameplay methods
     public isAttacking(): boolean {
@@ -43,7 +43,7 @@ export class Bot extends ex.Actor {
     }
 
     // Graphics variables
-    public timeAlive = 0; // Increments every PreUpdate, currently only for trajpoint flicker effect
+    private timeAlive = 0; // Increments every PreUpdate, currently only for trajpoint flicker effect
     private trajectoryActors: ex.Actor[] = []; // Array to store trajectory actors to kill
 
     // Attribute variables, will likely be held outside player.ts at some point
@@ -58,7 +58,7 @@ export class Bot extends ex.Actor {
     // Hitbox instantiation
     constructor(x: number, y: number) {
         super({
-            name: 'Bot',
+            name: 'Player',
             pos: new ex.Vector(x, y),
             collisionType: ex.CollisionType.Active,
             collisionGroup: ex.CollisionGroupManager.groupByName("player"),
@@ -97,15 +97,15 @@ export class Bot extends ex.Actor {
         }
   
         // Legacy
-        createAnimationPair("hurt", botSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
+        createAnimationPair("hurt", playerSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
 
         // New
-        createAnimationPair("idle", newBotSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
-        createAnimationPair("walk", newBotSpriteSheet, [16, 17, 18, 19], 100);
-        createAnimationPair("crouch", newBotSpriteSheet, [34, 35, 36], 200);
-        createAnimationPair("sprint", newBotSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
-        createAnimationPair("attack", newBotSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
-        createAnimationPair("jump", newBotSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
+        createAnimationPair("idle", playerSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
+        createAnimationPair("walk", playerSpriteSheet, [16, 17, 18, 19], 100);
+        createAnimationPair("crouch", playerSpriteSheet, [34, 35, 36], 200);
+        createAnimationPair("sprint", playerSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
+        createAnimationPair("attack", playerSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
+        createAnimationPair("jump", playerSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
    
         // onPostCollision is an event, not a lifecycle meaning it can be subscribed to by other things
         this.on('postcollision', (evt) => this.onPostCollision(evt));
@@ -133,7 +133,7 @@ export class Bot extends ex.Actor {
                 this.graphics.use("hurtright");
             }
             this.hurt = true;
-            this.hurtTime = Bot.HURT_TIME;
+            this.hurtTime = Player.HURT_TIME;
             Resources.hit.play(.1);
         }
     }
@@ -150,8 +150,8 @@ export class Bot extends ex.Actor {
 
         // Slow Player to stop
         if (this.onGround) {
-            this.vel.x *= Bot.FRICTION;
-            if (Math.abs(this.vel.x) < Bot.FRICTION_THRESHOLD) {
+            this.vel.x *= Player.FRICTION;
+            if (Math.abs(this.vel.x) < Player.FRICTION_THRESHOLD) {
                 this.vel.x = 0;
             }
         }
@@ -163,9 +163,9 @@ export class Bot extends ex.Actor {
         this.trajectoryActors = [];
 
         // Prepare attribute-influenced motion vars
-        let speed = Bot.SPEED_MULT * this.dex;
-        let jumpacc = Bot.JMPACC_MULT * this.dex;
-        let maxjump = Bot.MAXJMP_MULT * this.str;
+        let speed = Player.SPEED_MULT * this.dex;
+        let jumpacc = Player.JMPACC_MULT * this.dex;
+        let maxjump = Player.MAXJMP_MULT * this.str;
 
         // Player input
         let attackkey = engine.input.keyboard.isHeld(ex.Input.Keys.X);
@@ -177,7 +177,7 @@ export class Bot extends ex.Actor {
 
         // Everything but jump, how serene and well laid out and...
         if (attackkey) {
-            this.attacking = Bot.ATTACK_FRAMES;
+            this.attacking = Player.ATTACK_FRAMES;
         }
         if (this.onGround) {
             if (this.facing == 1) {
@@ -191,7 +191,7 @@ export class Bot extends ex.Actor {
                 this.facing = 1;
                 this.graphics.use("walkleft");
                 if (sprintkey) {
-                    this.vel.x *= Bot.SPRINT_MULT;
+                    this.vel.x *= Player.SPRINT_MULT;
                     this.graphics.use("sprintleft");
                 }
             }
@@ -200,12 +200,12 @@ export class Bot extends ex.Actor {
                 this.facing = 2;
                 this.graphics.use("walkright");
                 if (sprintkey) {
-                    this.vel.x *= Bot.SPRINT_MULT;
+                    this.vel.x *= Player.SPRINT_MULT;
                     this.graphics.use("sprintright");
                 }
             }
             if (!sprintkey && crouchkey) {
-                this.vel.x *= Bot.CROUCH_MULT;
+                this.vel.x *= Player.CROUCH_MULT;
                 if (this.facing == 1) {
                     this.graphics.use("crouchleft");
                 }
@@ -225,17 +225,17 @@ export class Bot extends ex.Actor {
 
             // Determine jump angle (exclude some range below Player)
             let jumpangle = Math.atan2(rely, relx);
-            if (jumpangle > Bot.ANGLE_JMPLIM_E && jumpangle < Bot.ANGLE_JMPLIM_W) {
+            if (jumpangle > Player.ANGLE_JMPLIM_E && jumpangle < Player.ANGLE_JMPLIM_W) {
                 if (jumpangle > Math.PI / 2) {
-                    jumpangle = Bot.ANGLE_JMPLIM_W;
+                    jumpangle = Player.ANGLE_JMPLIM_W;
                 }
                 else {
-                    jumpangle = Bot.ANGLE_JMPLIM_E;
+                    jumpangle = Player.ANGLE_JMPLIM_E;
                 }
             }
 
             // Determine magnitude and velocity of jump based on displacement of pointer 
-            let jumpmag = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / Bot.DISPLACEMENT_DIVISOR), maxjump);
+            let jumpmag = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / Player.DISPLACEMENT_DIVISOR), maxjump);
             let jumpvely = jumpmag * Math.sin(jumpangle);
             let jumpvelx = jumpmag * Math.cos(jumpangle);
 
@@ -266,12 +266,12 @@ export class Bot extends ex.Actor {
             }
 
             // Trajectory drawing
-            let t = Bot.T_INC;
-            let trajpoints = Math.round(jumpmag / Bot.TRAJPOINTS_DIVISOR);
+            let t = Player.T_INC;
+            let trajpoints = Math.round(jumpmag / Player.TRAJPOINTS_DIVISOR);
             for (let i = 0; i < trajpoints; i++) {
                 // Find coords on parametric equation
                 let trajpointx = (t * jumpvelx);
-                let trajpointy = ((t * jumpvely) + (Bot.G * (t ** 2)));
+                let trajpointy = ((t * jumpvely) + (Player.G * (t ** 2)));
                 
                 // Render coords
                 const lineActor = new ex.Actor({
@@ -280,10 +280,10 @@ export class Bot extends ex.Actor {
                 lineActor.graphics.anchor = ex.Vector.Zero;
                 lineActor.z = -1; // Almost creates the illusion that these currently ignore all obstructions
                 let pointthickness = (
-                    Bot.MIN_POINT_THICKNESS +
-                    (Bot.MAX_POINT_THICKNESS - Bot.MIN_POINT_THICKNESS) *
-                    (Math.cos(Bot.POINT_FLICKER_SPEED * (this.timeAlive - i))) +
-                    0.5 * Math.sin(2 * Bot.POINT_FLICKER_SPEED * (this.timeAlive - i))
+                    Player.MIN_POINT_THICKNESS +
+                    (Player.MAX_POINT_THICKNESS - Player.MIN_POINT_THICKNESS) *
+                    (Math.cos(Player.POINT_FLICKER_SPEED * (this.timeAlive - i))) +
+                    0.5 * Math.sin(2 * Player.POINT_FLICKER_SPEED * (this.timeAlive - i))
                 );
                 lineActor.graphics.use(
                     new ex.Line({
@@ -295,7 +295,7 @@ export class Bot extends ex.Actor {
                 );
                 engine.add(lineActor);
                 this.trajectoryActors.push(lineActor);
-                t += Bot.T_INC;
+                t += Player.T_INC;
             }
         }
 
