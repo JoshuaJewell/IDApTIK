@@ -172,127 +172,129 @@ export class Player extends ex.Actor {
         let crouchkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Down) || engine.input.keyboard.isHeld(ex.Input.Keys.S)) || engine.input.keyboard.isHeld(ex.Input.Keys.ControlLeft);
         let rightkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Right) || engine.input.keyboard.isHeld(ex.Input.Keys.D));
 
-        // Everything but jump, how serene and well laid out and...
-        if (attackkey) {
-            this.attacking = Player.ATTACK_FRAMES;
-        }
-        if (this.onGround) {
-            if (this.facing == 1) {
-                this.graphics.use("idleleft");
+        if (attackkey || sprintkey || upkey || leftkey || rightkey || crouchkey) { // Checks for any input, which partially fixes a bug where right-click causes previous input to "stick".
+            // Everything but jump, how serene and well laid out and...
+            if (attackkey) {
+                this.attacking = Player.ATTACK_FRAMES;
             }
-            else {
-                this.graphics.use("idleright");
-            } 
-            if (leftkey) {
-                this.vel.x = -speed;
-                this.facing = 1;
-                this.graphics.use("walkleft");
-                if (sprintkey) {
-                    this.vel.x *= Player.SPRINT_MULT;
-                    this.graphics.use("sprintleft");
+            if (this.onGround) {
+                if (this.facing == 1) {
+                    this.graphics.use("idleleft");
+                }
+                else {
+                    this.graphics.use("idleright");
+                } 
+                if (leftkey) {
+                    this.vel.x = -speed;
+                    this.facing = 1;
+                    this.graphics.use("walkleft");
+                    if (sprintkey) {
+                        this.vel.x *= Player.SPRINT_MULT;
+                        this.graphics.use("sprintleft");
+                    }
+                }
+                if (rightkey) {
+                    this.vel.x = speed;
+                    this.facing = 2;
+                    this.graphics.use("walkright");
+                    if (sprintkey) {
+                        this.vel.x *= Player.SPRINT_MULT;
+                        this.graphics.use("sprintright");
+                    }
+                }
+                if (!sprintkey && crouchkey) {
+                    this.vel.x *= Player.CROUCH_MULT;
+                    if (this.facing == 1) {
+                        this.graphics.use("crouchleft");
+                    }
+                    else {
+                        this.graphics.use("crouchright");
+                    }
                 }
             }
-            if (rightkey) {
-                this.vel.x = speed;
-                this.facing = 2;
-                this.graphics.use("walkright");
-                if (sprintkey) {
-                    this.vel.x *= Player.SPRINT_MULT;
-                    this.graphics.use("sprintright");
+
+            // ...oh my god what is this??? (Jump)
+            if ((upkey || this.jumpPotential > 0) && this.onGround) {
+                this.vel.x = 0; // Lock Player position while aiming
+
+                // Find pointer-Player difference
+                let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
+                let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
+
+                // Determine jump angle (exclude some range below Player)
+                let jumpangle = Math.atan2(rely, relx);
+                if (jumpangle > Player.ANGLE_JMPLIM_E && jumpangle < Player.ANGLE_JMPLIM_W) {
+                    if (jumpangle > Math.PI / 2) {
+                        jumpangle = Player.ANGLE_JMPLIM_W;
+                    }
+                    else {
+                        jumpangle = Player.ANGLE_JMPLIM_E;
+                    }
                 }
-            }
-            if (!sprintkey && crouchkey) {
-                this.vel.x *= Player.CROUCH_MULT;
+
+                // Determine magnitude and velocity of jump based on displacement of pointer 
+                let jumpmag = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / Player.   DISPLACEMENT_DIVISOR), maxjump);
+                let jumpvely = jumpmag * Math.sin(jumpangle);
+                let jumpvelx = jumpmag * Math.cos(jumpangle);
+
+                // Match Player facing with mouse facing, apply animation
+                this.facing = (0.5 * relx / Math.abs(relx)) + 1.5; // -ve relx = 1 (left), +ve  relx = 2 (right)
                 if (this.facing == 1) {
                     this.graphics.use("crouchleft");
                 }
                 else {
                     this.graphics.use("crouchright");
                 }
-            }
-        }
 
-        // ...oh my god what is this??? (Jump)
-        if ((upkey || this.jumpPotential > 0) && this.onGround) {
-            this.vel.x = 0; // Lock Player position while aiming
-
-            // Find pointer-Player difference
-            let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
-            let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
-
-            // Determine jump angle (exclude some range below Player)
-            let jumpangle = Math.atan2(rely, relx);
-            if (jumpangle > Player.ANGLE_JMPLIM_E && jumpangle < Player.ANGLE_JMPLIM_W) {
-                if (jumpangle > Math.PI / 2) {
-                    jumpangle = Player.ANGLE_JMPLIM_W;
+                // Release jump or continue increasing potential
+                if (upkey && (this.jumpPotential < maxjump)) {
+                    this.jumpPotential += jumpacc;
                 }
-                else {
-                    jumpangle = Player.ANGLE_JMPLIM_E;
+                else if (!upkey && (this.jumpPotential > 0)) {
+                    if (this.facing == 1) {
+                        this.graphics.use("jumpleft");
+                    }
+                    else {
+                        this.graphics.use("jumpright");
+                    }
+                    this.vel.y = jumpvely;
+                    this.vel.x = jumpvelx;
+                    this.jumpPotential = 0;
+                    this.onGround = false;
                 }
-            }
 
-            // Determine magnitude and velocity of jump based on displacement of pointer 
-            let jumpmag = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / Player.DISPLACEMENT_DIVISOR), maxjump);
-            let jumpvely = jumpmag * Math.sin(jumpangle);
-            let jumpvelx = jumpmag * Math.cos(jumpangle);
+                // Trajectory drawing
+                let t = Player.T_INC;
+                let trajpoints = Math.round(jumpmag / Player.TRAJPOINTS_DIVISOR);
+                for (let i = 0; i < trajpoints; i++) {
+                    // Find coords on parametric equation
+                    let trajpointx = (t * jumpvelx);
+                    let trajpointy = ((t * jumpvely) + (Player.G * (t ** 2)));
 
-            // Match Player facing with mouse facing, apply animation
-            this.facing = (0.5 * relx / Math.abs(relx)) + 1.5; // -ve relx = 1 (left), +ve relx = 2 (right)
-            if (this.facing == 1) {
-                this.graphics.use("crouchleft");
-            }
-            else {
-                this.graphics.use("crouchright");
-            }
-
-            // Release jump or continue increasing potential
-            if (upkey && (this.jumpPotential < maxjump)) {
-                this.jumpPotential += jumpacc;
-            }
-            else if (!upkey && (this.jumpPotential > 0)) {
-                if (this.facing == 1) {
-                    this.graphics.use("jumpleft");
+                    // Render coords
+                    const lineActor = new ex.Actor({
+                        pos: this.getGlobalPos(),
+                    });
+                    lineActor.graphics.anchor = ex.Vector.Zero;
+                    lineActor.z = -1; // Almost creates the illusion that these currently ignore    all obstructions
+                    let pointthickness = (
+                        Player.MIN_POINT_THICKNESS +
+                        (Player.MAX_POINT_THICKNESS - Player.MIN_POINT_THICKNESS) *
+                        (Math.cos(Player.POINT_FLICKER_SPEED * (this.timeAlive - i))) +
+                        0.5 * Math.sin(2 * Player.POINT_FLICKER_SPEED * (this.timeAlive - i))
+                    );
+                    lineActor.graphics.use(
+                        new ex.Line({
+                            start: ex.vec(trajpointx, trajpointy - (0.5 * pointthickness)),
+                            end: ex.vec(trajpointx, trajpointy + (0.5 * pointthickness)),
+                            color: new ex.Color(0, 0, 0, 1 / (i + 1)),
+                            thickness: pointthickness,
+                        })
+                    );
+                    engine.add(lineActor);
+                    this.trajectoryActors.push(lineActor);
+                    t += Player.T_INC;
                 }
-                else {
-                    this.graphics.use("jumpright");
-                }
-                this.vel.y = jumpvely;
-                this.vel.x = jumpvelx;
-                this.jumpPotential = 0;
-                this.onGround = false;
-            }
-
-            // Trajectory drawing
-            let t = Player.T_INC;
-            let trajpoints = Math.round(jumpmag / Player.TRAJPOINTS_DIVISOR);
-            for (let i = 0; i < trajpoints; i++) {
-                // Find coords on parametric equation
-                let trajpointx = (t * jumpvelx);
-                let trajpointy = ((t * jumpvely) + (Player.G * (t ** 2)));
-                
-                // Render coords
-                const lineActor = new ex.Actor({
-                    pos: this.getGlobalPos(),
-                });
-                lineActor.graphics.anchor = ex.Vector.Zero;
-                lineActor.z = -1; // Almost creates the illusion that these currently ignore all obstructions
-                let pointthickness = (
-                    Player.MIN_POINT_THICKNESS +
-                    (Player.MAX_POINT_THICKNESS - Player.MIN_POINT_THICKNESS) *
-                    (Math.cos(Player.POINT_FLICKER_SPEED * (this.timeAlive - i))) +
-                    0.5 * Math.sin(2 * Player.POINT_FLICKER_SPEED * (this.timeAlive - i))
-                );
-                lineActor.graphics.use(
-                    new ex.Line({
-                        start: ex.vec(trajpointx, trajpointy - (0.5 * pointthickness)),
-                        end: ex.vec(trajpointx, trajpointy + (0.5 * pointthickness)),
-                        color: new ex.Color(0, 0, 0, 1 / (i + 1)),
-                        thickness: pointthickness,
-                    })
-                );
-                engine.add(lineActor);
-                this.trajectoryActors.push(lineActor);
-                t += Player.T_INC;
             }
         }
 
