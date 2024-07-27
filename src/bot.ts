@@ -3,26 +3,6 @@ import { botSpriteSheet, Resources, newBotSpriteSheet } from './resources';
 import { Baddie } from './baddie';
 
 export class Bot extends ex.Actor {
-    // Gameplay variables
-    public onGround = true;
-    public hurt = false;
-    public facing = 1; // 1 Left, 2 Right, (-1 Leftdown, -2 Rightdown - legacy)
-    public hurtTime = 0;
-    public attacking = 0;
-    public jumpPotential = 0;
-
-    // Graphics variables
-    public timeAlive = 0; // Increments every PreUpdate, currently only for trajpoint flicker effect
-    private trajectoryActors: ex.Actor[] = []; // Array to store trajectory actors to kill
-
-    // Attribute variables, will likely be held outside player.ts at some point
-    public str = 100;
-    public dex = 100;
-    public con = 100;
-    public int = 100;
-    public wil = 100;
-    public cha = 100;
-
     // Gameplay constants
     private static readonly HURT_TIME = 1000; // Legacy
     private static readonly FRICTION = 0.75;
@@ -45,6 +25,35 @@ export class Bot extends ex.Actor {
     private static readonly G = 400; // Gravitational constant, empirical
     private static readonly ANGLE_JMPLIM_E = Math.PI / 4; // South-East, needs increasing
     private static readonly ANGLE_JMPLIM_W = 3 * Math.PI / 4; // South-West, needs decreasing
+
+    // Gameplay variables
+    public onGround = true;
+    public hurt = false;
+    public facing = 1; // 1 Left, 2 Right, (-1 Leftdown, -2 Rightdown - legacy)
+    public hurtTime = 0;
+    public attacking = 0;
+    public jumpPotential = 0;
+    public attackWindowStart = 20; // Attack window will depend on animation and weapon types...will absolutely need rework
+    public attackWindowDuration = 40;
+    public attackWindowEnd = this.attackWindowDuration - this.attackWindowStart;
+
+    // Gameplay methods
+    public isAttacking(): boolean {
+        return this.attacking >= this.attackWindowStart && this.attacking <= this.attackWindowEnd;
+    }
+
+    // Graphics variables
+    public timeAlive = 0; // Increments every PreUpdate, currently only for trajpoint flicker effect
+    private trajectoryActors: ex.Actor[] = []; // Array to store trajectory actors to kill
+
+    // Attribute variables, will likely be held outside player.ts at some point
+    public str = 100;
+    public dex = 100;
+    public con = 100;
+    public int = 100;
+    public wil = 100;
+    public cha = 100;
+
 
     // Hitbox instantiation
     constructor(x: number, y: number) {
