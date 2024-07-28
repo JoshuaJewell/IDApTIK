@@ -1,7 +1,13 @@
-# Gitpoint
+# Invisible Door: Actionpoint Trauma, Inc. Kickers
 
 ## What is it?
-This is a multiplayer, stealth, puzzle-platformer game, written in TypeScript using [Excalibur](https://excaliburjs.com/), inspired by [Gunpoint](https://store.steampowered.com/app/206190/Gunpoint/). Find out more at our [Wiki](https://github.com/JoshuaJewell/Gitpoint/wiki).
+This is a multiplayer, stealth, puzzle-platformer game, written in TypeScript using [Excalibur](https://excaliburjs.com/), inspired by:
+  * [Barotrauma](https://store.steampowered.com/app/602960/Barotrauma)
+  * [Door Kickers: Action Squad](https://store.steampowered.com/app/686200/Door_Kickers_Action_Squad/)
+  * [Gunpoint](https://store.steampowered.com/app/206190/Gunpoint/)
+  * [Invisible, Inc.](https://store.steampowered.com/app/243970/Invisible_Inc/)
+
+And if you're wondering what on Earth that even means, you can find out more at our [Wiki](https://github.com/JoshuaJewell/IDApTIK/wiki).
 
 ## Demo v0.1
 
@@ -13,7 +19,7 @@ This is a multiplayer, stealth, puzzle-platformer game, written in TypeScript us
 Requires npm and git.
 
 Clone repo: <br/>
-`git clone https://github.com/JoshuaJewell/Gitpoint.git`
+`git clone https://github.com/JoshuaJewell/IDApTIK.git`
 
 Install requirements: <br/>
 `npm install`
