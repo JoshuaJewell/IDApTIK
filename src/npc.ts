@@ -1,12 +1,15 @@
 import * as ex from 'excalibur';
 import { playerRedSpriteSheet, Resources, npcSprite } from './resources';
 import { Player } from './player';
+import BaseActor from './baseactor';
 let player:Player = new Player(0, 0);
 
-export class NPC extends ex.Actor {
-    public onGround = true;
-    public hurt = false;
-    public hurtTime: number = 0;
+export class NPC extends BaseActor {
+    private onGround = true;
+    private hurt = false;
+    private hurtTime: number = 0;
+    private facing = 1;
+
     constructor(x: number, y: number) {
         super({
             pos: new ex.Vector(x, y),
@@ -20,33 +23,15 @@ export class NPC extends ex.Actor {
     onInitialize(engine: ex.Engine) {
         // Initialize actor
 
-        // Set the z-index to be behind everything
         this.z = -1;
 
         // Setup visuals
-        const hurtleft = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
-        hurtleft.scale = new ex.Vector(2, 2);
+        this.createAnimationPair("walk", playerRedSpriteSheet, [3, 4, 5, 6, 7], 100);
+        this.createAnimationPair("hurt", playerRedSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
+        this.createAnimationPair("idle", playerRedSpriteSheet, [2, 3], 800);
 
-        const hurtright = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
-        hurtright.scale = new ex.Vector(2, 2);
-        hurtright.flipHorizontal = true;
-
-        const idle = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [2, 3], 800);
-        idle.scale = new ex.Vector(2, 2);
-
-        const left = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [3, 4, 5, 6, 7], 100);
-        left.scale = new ex.Vector(2, 2);
-
-        const right = ex.Animation.fromSpriteSheet(playerRedSpriteSheet, [3, 4, 5, 6, 7], 100);
-        right.scale = new ex.Vector(2, 2);
-        right.flipHorizontal = true;
-
-        // Register drawings
-        this.graphics.add("hurtleft", hurtleft);
-        this.graphics.add("hurtright", hurtright);
-        this.graphics.add("idle", idle);
-        this.graphics.add("left", left);
-        this.graphics.add("right", right);
+        // Register animation
+        this.graphics.use("idleleft");
 
         // Setup patroling behavior
 
@@ -57,7 +42,6 @@ export class NPC extends ex.Actor {
                             .moveBy(100, 0, 20)
                             .moveBy(-100, 0, 20));
         }
-
 
         // Custom draw after local tranform, draws word bubble
         this.graphics.onPostDraw = (ctx) => {
@@ -84,13 +68,20 @@ export class NPC extends ex.Actor {
 
     onPostUpdate(engine: ex.Engine, delta: number) {
         if (this.vel.x < 0) {
-            this.graphics.use("left");
+            this.graphics.use("walkright");
+            this.facing = 1;
         }
         if (this.vel.x > 0) {
-            this.graphics.use("right");
+            this.graphics.use("walkleft");
+            this.facing = 2;
         }
-        if (this.vel.x === 0) {
-            this.graphics.use("idle")
+        if (this.vel.x == 0) {
+            if (this.facing == 1) {
+                this.graphics.use("idleright")
+            }
+            else {
+            this.graphics.use("idleleft")
+            }
         }
     }
 }

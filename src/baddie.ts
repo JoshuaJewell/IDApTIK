@@ -1,9 +1,10 @@
 import * as ex from 'excalibur';
 import { baddieSpriteSheet, Resources } from "./resources";
 import { Player } from './player';
+import BaseActor from './baseactor';
 let player:Player = new Player(0, 0);
 
-export class Baddie extends ex.Actor {
+export class Baddie extends BaseActor {
     constructor(x: number, y: number, public dir: number) {
         super({
             name: 'Baddie',
@@ -19,20 +20,10 @@ export class Baddie extends ex.Actor {
         // Initialize actor
 
         // Setup visuals
-        const left = ex.Animation.fromSpriteSheet(baddieSpriteSheet, [2, 3, 4, 5], 100);
-        left.scale = new ex.Vector(2, 2);
-        const right = ex.Animation.fromSpriteSheet(baddieSpriteSheet, [2, 3, 4, 5], 100);
-        right.scale = new ex.Vector(2, 2);
-        right.flipHorizontal = true;
+        this.createAnimationPair("walk", baddieSpriteSheet, [2, 3, 4, 5], 100);
 
         // Register animation
-        this.graphics.add("left", left)
-        this.graphics.add("right", right);
-        this.graphics.use("left");
-
-        if ((window as any).__TESTING) {
-            left.pause();
-        }
+        this.graphics.use("walkleft");
 
         // Setup patroling behavior
 
@@ -66,9 +57,9 @@ export class Baddie extends ex.Actor {
     // Change animation based on velocity 
     onPostUpdate() {
         if (this.vel.x < 0) {
-            this.graphics.use("left");
+            this.graphics.use("walkright");
         } else if (this.vel.x > 0) {
-            this.graphics.use("right");
+            this.graphics.use("walkleft");
         }
     }
     

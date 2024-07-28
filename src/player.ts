@@ -1,8 +1,9 @@
 import * as ex from 'excalibur';
 import { playerSpriteSheet, Resources } from './resources';
 import { Baddie } from './baddie';
+import BaseActor from './baseactor';
 
-export class Player extends ex.Actor {
+export class Player extends BaseActor {
     // Gameplay constants
     private static readonly HURT_TIME = 1000; // Legacy
     private static readonly FRICTION = 0.75;
@@ -66,43 +67,17 @@ export class Player extends ex.Actor {
     // OnInitialize is called before the 1st actor update
     onInitialize(engine: ex.Engine) {
         // Register all animations
-        function createAnimation(
-            this: ex.Actor,
-            name: string,
-            spriteSheet: ex.SpriteSheet,
-            frames: number[],
-            speed: number,
-            scale: ex.Vector = new ex.Vector(2, 2),
-            flipHorizontal: boolean = false,
-            createPair: boolean = false
-        ): void {
-            if (createPair) {
-                createAnimation.call(this, `${name}right`, spriteSheet, frames, speed, scale);
-                createAnimation.call(this, `${name}left`, spriteSheet, frames, speed, scale, true);
-            }
-            else {
-                const animation = ex.Animation.fromSpriteSheet(spriteSheet, frames, speed);
-                animation.scale = scale;
-                if (flipHorizontal) {
-                    animation.flipHorizontal = true;
-                }
-                this.graphics.add(name, animation);
-            }
-        }
-        const createAnimationPair = (name: string, spriteSheet: ex.SpriteSheet, frames: number[], speed: number) => {
-            createAnimation.call(this, name, spriteSheet, frames, speed, undefined, false, true);
-        }
   
         // Legacy
-        createAnimationPair("hurt", playerSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
+        this.createAnimationPair("hurt", playerSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
 
         // New
-        createAnimationPair("idle", playerSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
-        createAnimationPair("walk", playerSpriteSheet, [16, 17, 18, 19], 100);
-        createAnimationPair("crouch", playerSpriteSheet, [34, 35, 36], 200);
-        createAnimationPair("sprint", playerSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
-        createAnimationPair("attack", playerSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
-        createAnimationPair("jump", playerSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
+        this.createAnimationPair("idle", playerSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
+        this.createAnimationPair("walk", playerSpriteSheet, [16, 17, 18, 19], 100);
+        this.createAnimationPair("crouch", playerSpriteSheet, [34, 35, 36], 200);
+        this.createAnimationPair("sprint", playerSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
+        this.createAnimationPair("attack", playerSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
+        this.createAnimationPair("jump", playerSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
    
         // onPostCollision is an event, not a lifecycle meaning it can be subscribed to by other things
         this.on('postcollision', (evt) => this.onPostCollision(evt));
@@ -172,129 +147,127 @@ export class Player extends ex.Actor {
         let crouchkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Down) || engine.input.keyboard.isHeld(ex.Input.Keys.S)) || engine.input.keyboard.isHeld(ex.Input.Keys.ControlLeft);
         let rightkey = (engine.input.keyboard.isHeld(ex.Input.Keys.Right) || engine.input.keyboard.isHeld(ex.Input.Keys.D));
 
-        if (attackkey || sprintkey || upkey || leftkey || rightkey || crouchkey) { // Checks for any input, which partially fixes a bug where right-click causes previous input to "stick".
-            // Everything but jump, how serene and well laid out and...
-            if (attackkey) {
-                this.attacking = Player.ATTACK_FRAMES;
+        // Everything but jump, how serene and well laid out and...
+        if (attackkey) {
+            this.attacking = Player.ATTACK_FRAMES;
+        }
+        if (this.onGround) {
+            if (this.facing == 1) {
+                this.graphics.use("idleleft");
             }
-            if (this.onGround) {
-                if (this.facing == 1) {
-                    this.graphics.use("idleleft");
-                }
-                else {
-                    this.graphics.use("idleright");
-                } 
-                if (leftkey) {
-                    this.vel.x = -speed;
-                    this.facing = 1;
-                    this.graphics.use("walkleft");
-                    if (sprintkey) {
-                        this.vel.x *= Player.SPRINT_MULT;
-                        this.graphics.use("sprintleft");
-                    }
-                }
-                if (rightkey) {
-                    this.vel.x = speed;
-                    this.facing = 2;
-                    this.graphics.use("walkright");
-                    if (sprintkey) {
-                        this.vel.x *= Player.SPRINT_MULT;
-                        this.graphics.use("sprintright");
-                    }
-                }
-                if (!sprintkey && crouchkey) {
-                    this.vel.x *= Player.CROUCH_MULT;
-                    if (this.facing == 1) {
-                        this.graphics.use("crouchleft");
-                    }
-                    else {
-                        this.graphics.use("crouchright");
-                    }
+            else {
+                this.graphics.use("idleright");
+            } 
+            if (leftkey) {
+                this.vel.x = -speed;
+                this.facing = 1;
+                this.graphics.use("walkleft");
+                if (sprintkey) {
+                    this.vel.x *= Player.SPRINT_MULT;
+                    this.graphics.use("sprintleft");
                 }
             }
-
-            // ...oh my god what is this??? (Jump)
-            if ((upkey || this.jumpPotential > 0) && this.onGround) {
-                this.vel.x = 0; // Lock Player position while aiming
-
-                // Find pointer-Player difference
-                let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
-                let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
-
-                // Determine jump angle (exclude some range below Player)
-                let jumpangle = Math.atan2(rely, relx);
-                if (jumpangle > Player.ANGLE_JMPLIM_E && jumpangle < Player.ANGLE_JMPLIM_W) {
-                    if (jumpangle > Math.PI / 2) {
-                        jumpangle = Player.ANGLE_JMPLIM_W;
-                    }
-                    else {
-                        jumpangle = Player.ANGLE_JMPLIM_E;
-                    }
+            if (rightkey) {
+                this.vel.x = speed;
+                this.facing = 2;
+                this.graphics.use("walkright");
+                if (sprintkey) {
+                    this.vel.x *= Player.SPRINT_MULT;
+                    this.graphics.use("sprintright");
                 }
-
-                // Determine magnitude and velocity of jump based on displacement of pointer 
-                let jumpmag = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / Player.   DISPLACEMENT_DIVISOR), maxjump);
-                let jumpvely = jumpmag * Math.sin(jumpangle);
-                let jumpvelx = jumpmag * Math.cos(jumpangle);
-
-                // Match Player facing with mouse facing, apply animation
-                this.facing = (0.5 * relx / Math.abs(relx)) + 1.5; // -ve relx = 1 (left), +ve  relx = 2 (right)
+            }
+            if (!sprintkey && crouchkey) {
+                this.vel.x *= Player.CROUCH_MULT;
                 if (this.facing == 1) {
                     this.graphics.use("crouchleft");
                 }
                 else {
                     this.graphics.use("crouchright");
                 }
+            }
+        }
 
-                // Release jump or continue increasing potential
-                if (upkey && (this.jumpPotential < maxjump)) {
-                    this.jumpPotential += jumpacc;
-                }
-                else if (!upkey && (this.jumpPotential > 0)) {
-                    if (this.facing == 1) {
-                        this.graphics.use("jumpleft");
-                    }
-                    else {
-                        this.graphics.use("jumpright");
-                    }
-                    this.vel.y = jumpvely;
-                    this.vel.x = jumpvelx;
-                    this.jumpPotential = 0;
-                    this.onGround = false;
-                }
+        // ...oh my god what is this??? (Jump)
+        if ((upkey || this.jumpPotential > 0) && this.onGround) {
+            this.vel.x = 0; // Lock Player position while aiming
 
-                // Trajectory drawing
-                let t = Player.T_INC;
-                let trajpoints = Math.round(jumpmag / Player.TRAJPOINTS_DIVISOR);
-                for (let i = 0; i < trajpoints; i++) {
-                    // Find coords on parametric equation
-                    let trajpointx = (t * jumpvelx);
-                    let trajpointy = ((t * jumpvely) + (Player.G * (t ** 2)));
+            // Find pointer-Player difference
+            let relx = engine.input.pointers.primary.lastWorldPos.x - this.getGlobalPos().x;
+            let rely = engine.input.pointers.primary.lastWorldPos.y - this.getGlobalPos().y;
 
-                    // Render coords
-                    const lineActor = new ex.Actor({
-                        pos: this.getGlobalPos(),
-                    });
-                    lineActor.graphics.anchor = ex.Vector.Zero;
-                    lineActor.z = -1; // Almost creates the illusion that these currently ignore    all obstructions
-                    let pointthickness = (
-                        Player.MIN_POINT_THICKNESS +
-                        (Player.MAX_POINT_THICKNESS - Player.MIN_POINT_THICKNESS) *
-                        (Math.cos(Player.POINT_FLICKER_SPEED * (this.timeAlive - i))) +
-                        0.5 * Math.sin(2 * Player.POINT_FLICKER_SPEED * (this.timeAlive - i))
-                    );
-                    lineActor.graphics.use(
-                        new ex.Line({
-                            start: ex.vec(trajpointx, trajpointy - (0.5 * pointthickness)),
-                            end: ex.vec(trajpointx, trajpointy + (0.5 * pointthickness)),
-                            color: new ex.Color(0, 0, 0, 1 / (i + 1)),
-                            thickness: pointthickness,
-                        })
-                    );
-                    engine.add(lineActor);
-                    this.trajectoryActors.push(lineActor);
-                    t += Player.T_INC;
+            // Determine jump angle (exclude some range below Player)
+            let jumpangle = Math.atan2(rely, relx);
+            if (jumpangle > Player.ANGLE_JMPLIM_E && jumpangle < Player.ANGLE_JMPLIM_W) {
+                if (jumpangle > Math.PI / 2) {
+                    jumpangle = Player.ANGLE_JMPLIM_W;
                 }
+                else {
+                    jumpangle = Player.ANGLE_JMPLIM_E;
+                }
+            }
+
+            // Determine magnitude and velocity of jump based on displacement of pointer 
+            let jumpmag = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / Player.   DISPLACEMENT_DIVISOR), maxjump);
+            let jumpvely = jumpmag * Math.sin(jumpangle);
+            let jumpvelx = jumpmag * Math.cos(jumpangle);
+
+            // Match Player facing with mouse facing, apply animation
+            this.facing = (0.5 * relx / Math.abs(relx)) + 1.5; // -ve relx = 1 (left), +ve  relx = 2 (right)
+            if (this.facing == 1) {
+                this.graphics.use("crouchleft");
+            }
+            else {
+                this.graphics.use("crouchright");
+            }
+
+            // Release jump or continue increasing potential
+            if (upkey && (this.jumpPotential < maxjump)) {
+                this.jumpPotential += jumpacc;
+            }
+            else if (!upkey && (this.jumpPotential > 0)) {
+                if (this.facing == 1) {
+                    this.graphics.use("jumpleft");
+                }
+                else {
+                    this.graphics.use("jumpright");
+                }
+                this.vel.y = jumpvely;
+                this.vel.x = jumpvelx;
+                this.jumpPotential = 0;
+                this.onGround = false;
+            }
+
+            // Trajectory drawing
+            let t = Player.T_INC;
+            let trajpoints = Math.round(jumpmag / Player.TRAJPOINTS_DIVISOR);
+            for (let i = 0; i < trajpoints; i++) {
+                // Find coords on parametric equation
+                let trajpointx = (t * jumpvelx);
+                let trajpointy = ((t * jumpvely) + (Player.G * (t ** 2)));
+
+                // Render coords
+                const lineActor = new ex.Actor({
+                    pos: this.getGlobalPos(),
+                });
+                lineActor.graphics.anchor = ex.Vector.Zero;
+                lineActor.z = -1; // Almost creates the illusion that these currently ignore    all obstructions
+                let pointthickness = (
+                    Player.MIN_POINT_THICKNESS +
+                    (Player.MAX_POINT_THICKNESS - Player.MIN_POINT_THICKNESS) *
+                    (Math.cos(Player.POINT_FLICKER_SPEED * (this.timeAlive - i))) +
+                    0.5 * Math.sin(2 * Player.POINT_FLICKER_SPEED * (this.timeAlive - i))
+                );
+                lineActor.graphics.use(
+                    new ex.Line({
+                        start: ex.vec(trajpointx, trajpointy - (0.5 * pointthickness)),
+                        end: ex.vec(trajpointx, trajpointy + (0.5 * pointthickness)),
+                        color: new ex.Color(0, 0, 0, 1 / (i + 1)),
+                        thickness: pointthickness,
+                    })
+                );
+                engine.add(lineActor);
+                this.trajectoryActors.push(lineActor);
+                t += Player.T_INC;
             }
         }
 
