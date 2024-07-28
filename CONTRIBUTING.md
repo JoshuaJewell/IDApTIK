@@ -1,6 +1,6 @@
 ## Submitting changes
 
-Please send a [GitHub Pull Request to opengovernment](https://github.com/JoshuaJewell/Gitpoint/pull/new/main) with a clear list of what you've done (read more about [pull requests](http://help.github.com/pull-requests/)). Please follow our coding conventions (below) and make sure all of your commits are atomic (one feature per commit).
+Please send a [GitHub Pull Request to Gitpoint](https://github.com/JoshuaJewell/Gitpoint/pull/new/main) with a clear list of what you've done (read more about [pull requests](http://help.github.com/pull-requests/)). Please follow our coding conventions (below) and make sure all of your commits are atomic (one feature per commit).
     
 ## Coding conventions
 
