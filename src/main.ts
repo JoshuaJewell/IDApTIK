@@ -4,15 +4,21 @@ import { Level } from './level';
 
 const engine = new ex.Engine({
     backgroundColor: ex.Color.fromHex('#efefef'),
-    //width: 1920,
-    //height: 1080,
+    width: 600,
+    height: 400,
     fixedUpdateFps: 60,
     // Turn off anti-aliasing for pixel art graphics
-    antialiasing: false
-});
+    antialiasing: false,
 
-// Set global gravity in pixels/sec^2
-ex.Physics.acc = new ex.Vector(0, 800);
+    // Set global gravity in pixels/sec^2
+    physics: {
+        solver: ex.SolverStrategy.Arcade,
+        gravity: ex.vec(0, 800),
+        arcade: {
+            contactSolveBias: ex.ContactSolveBias.VerticalFirst
+        },
+      }
+});
 
 // Setup first level as a custom scene
 const level = new Level();
