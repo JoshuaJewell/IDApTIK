@@ -14,13 +14,17 @@ export class Floor extends ex.Actor {
             collisionGroup: ex.CollisionGroupManager.groupByName("floor"),
         });
 
-        for (let i = 0; i < this.cols; i++) {
-            for (let j = 0; j < this.rows; j++) {
-                this.graphics.show(blockSprite, { 
-                    anchor: ex.Vector.Zero,
-                    offset: ex.vec(i * blockSprite.width, j * blockSprite.height)
-                })
-            }
-        }
+        const graphicsGroup = new ex.GraphicsGroup({
+            members: Array.from({ length: cols * rows }, (_, index) => {
+            const col = index % cols;
+            const row = Math.floor(index / cols);
+            return {
+                offset: ex.vec(col * blockSprite.width, row * blockSprite.height),
+                graphic: blockSprite,
+                };
+            }),
+        });
+        
+        this.graphics.use(graphicsGroup);
     }
 }
