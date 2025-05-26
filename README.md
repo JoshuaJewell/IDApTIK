@@ -1,28 +1,39 @@
-# Invisible Door: Actionpoint Trauma, Inc. Kickers
+# Invisible Door: Actionpoint Trauma, Inc. Kickers  
+**IDApTIK: If you have to ask, you're already compromised.**  
 
-## What is it?
-This is a multiplayer, stealth, puzzle-platformer game, written in TypeScript using [Excalibur](https://excaliburjs.com/), inspired by:
-  * [Barotrauma](https://store.steampowered.com/app/602960/Barotrauma)
-  * [Door Kickers: Action Squad](https://store.steampowered.com/app/686200/Door_Kickers_Action_Squad/)
-  * [Gunpoint](https://store.steampowered.com/app/206190/Gunpoint/)
-  * [Invisible, Inc.](https://store.steampowered.com/app/243970/Invisible_Inc/)
+*"Breaking in is easy. Getting back out is harder. Especially when your escape route depends on a hacker who swears he knows what he’s doing, right up until he accidentally reboots the entire security grid. If you live, congratulations—you have an excellent sense of timing."*  
 
-And if you're wondering what on Earth that even means, you can find out more at our [Wiki](https://github.com/JoshuaJewell/IDApTIK/wiki).
+## 🎭 What is it?  
+A multiplayer, stealth, puzzle-platformer written in TypeScript using [Excalibur](https://excaliburjs.com/), inspired by:  
+🔸 [Barotrauma](https://store.steampowered.com/app/602960/Barotrauma)  
+🔸 [Door Kickers: Action Squad](https://store.steampowered.com/app/686200/Door_Kickers_Action_Squad/)  
+🔸 [Gunpoint](https://store.steampowered.com/app/206190/Gunpoint/)  
+🔸 [Invisible, Inc.](https://store.steampowered.com/app/243970/Invisible_Inc/)  
 
-## Demo v0.1
+## 🔥 Asymmetric Multiplayer  
+One player infiltrates. One player hacks. **Neither wins alone.**  
+The infiltrator sneaks, jumps, and navigates obstacles.  
+The hacker rewires security systems, manipulates doors, and controls the battlefield.  
+The problem? **Coordination is everything—and the hacker is rarely on time.**  
 
-//Will be included once Envelope is reached
-<IFrameEmbed src={url} />
+## 📜 Learn More  
+🔹 [Wiki](https://github.com/JoshuaJewell/IDApTIK/wiki) – Full game documentation.  
+🔹 [Roadmap](https://github.com/JoshuaJewell/IDApTIK/wiki/Roadmap) – Development phases from Envelope to Motorcycle.  
+🔹 [Gameplay Mechanics](https://github.com/JoshuaJewell/IDApTIK/wiki/Gameplay) – What asymmetric tension really means.  
+🔹 [How to Contribute](https://github.com/JoshuaJewell/IDApTIK/wiki/Contributing) – Join the chaos.  
 
-## How to build
+## 🎮 Demo v0.1  
+//Will be included once Envelope is reached  
+<IFrameEmbed src={url} />  
 
-Requires npm and git.
+## 🛠 How to Build  
+Requires npm and git.  
 
-Clone repo: <br/>
-`git clone https://github.com/JoshuaJewell/IDApTIK.git`
+Clone repo:  
+`git clone https://github.com/JoshuaJewell/IDApTIK.git`  
 
-Install requirements: <br/>
-`npm install`
+Install requirements:  
+`npm install`  
 
-Compile and run on localhost:9000: <br/>
-`npm run dev`
+Compile and run on localhost:9000:  
+`npm run dev`  
