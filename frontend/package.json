@@ -10,12 +10,14 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/api": "^2.5.0",
+    "@tauri-apps/plugin-opener": "^2",
+    "excalibur": "^0.30.3"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
+    "typescript": "^5.8.3",
     "vite": "^6.0.3",
-    "typescript": "~5.6.2"
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
