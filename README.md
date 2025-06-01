@@ -26,14 +26,17 @@ The problem? **Coordination is everything—and the hacker is rarely on time.**
 //Will be included once Envelope is reached  
 <IFrameEmbed src={url} />  
 
-## 🛠 How to Build  
-Requires npm and git.  
+## 🛠 How to Run (game)  
+Requires Git and Bun.  
 
 Clone repo:  
-`git clone https://github.com/JoshuaJewell/IDApTIK.git`  
+`git clone https://github.com/JoshuaJewell/IDApTIK.git`
+
+Move to:
+`cd IDApTIK/frontend`
 
 Install requirements:  
-`npm install`  
+`bun install`  
 
-Compile and run on localhost:9000:  
-`npm run dev`  
+Run development:  
+`bun run tauri dev`  
