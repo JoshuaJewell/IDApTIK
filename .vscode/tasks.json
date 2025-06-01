@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Elixir Server",
+            "type": "shell",
+            "command": "mix phx.server",
+            "cwd": "${workspaceFolder}/backend"
+        },
+        {
+            "label": "Build Rust Game Engine",
+            "type": "shell",
+            "command": "cargo build",
+            "cwd": "${workspaceFolder}/engine"
+        },
+        {
+            "label": "Start TypeScript Frontend",
+            "type": "shell",
+            "command": "npm start",
+            "cwd": "${workspaceFolder}/frontend"
+        }
+    ]
+}

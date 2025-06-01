@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "jakebecker.elixir-ls",
+        "matklad.rust-analyzer",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-node-azure-pack"
+    ]
+}

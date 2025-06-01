@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Elixir Debugger",
+            "type": "elixir",
+            "request": "launch",
+            "projectDir": "${workspaceFolder}/backend"
+        },
+        {
+            "name": "Rust Debugger",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/engine/target/debug/idaptik-engine"
+        },
+        {
+            "name": "TypeScript Node Debugger",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/frontend/app.js"
+        }
+    ]
+}

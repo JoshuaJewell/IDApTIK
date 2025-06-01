@@ -1,0 +1,8 @@
+{
+    "editor.formatOnSave": true,
+    "files.autoSave": "afterDelay",
+    "elixirLS.dialyzerEnabled": true,
+    "rust-analyzer.serverPath": "rust-analyzer",
+    "typescript.tsdk": "./frontend/node_modules/typescript/lib",
+    "terminal.integrated.defaultProfile.windows": "PowerShell"
+}
