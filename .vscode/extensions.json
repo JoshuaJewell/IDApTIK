@@ -4,6 +4,7 @@
         "matklad.rust-analyzer",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "ms-vscode.vscode-node-azure-pack"
+        "ms-vscode.vscode-node-azure-pack",
+        "tauri-apps.tauri-vscode", "rust-lang.rust-analyzer"
     ]
 }
