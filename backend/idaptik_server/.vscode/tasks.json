@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "mix compile",
+      "type": "shell",
+      "command": "mix compile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "mix phx.server",
+      "type": "shell",
+      "command": "mix phx.server",
+      "group": "build",
+      "problemMatcher": ["$elixir"]
+    }
+  ]
+}
