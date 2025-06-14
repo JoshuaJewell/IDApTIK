@@ -85,7 +85,6 @@ export class Player extends BaseActor {
 
     onPostCollision(evt: ex.PostCollisionEvent) {
         // Player has collided with the Top of another collider
-        console.log(evt.other.name);
         if (evt.side === ex.Side.Bottom) {
             this.onGround = true;
         }
@@ -97,7 +96,7 @@ export class Player extends BaseActor {
         }
 
         // Player collision with enemy, display hurt animation (epistasis)
-        if (sideevt && evt.other instanceof Baddie) {
+        /*if (sideevt && evt.other instanceof Baddie) {
             if (this.vel.x < 0 && !this.hurt) {
                 this.graphics.use("hurtleft");
             } 
@@ -107,7 +106,7 @@ export class Player extends BaseActor {
             this.hurt = true;
             this.hurtTime = Player.HURT_TIME;
             Resources.hit.play(.1);
-        }
+        }*/
     }
 
     // After main update, once per frame execute this code
@@ -272,13 +271,8 @@ export class Player extends BaseActor {
         }
 
         // Manage attack animation, at end to overwrite any motion animation
-        if (this.attacking > 0) { // Attack anim implementation needs rework, but not immediately important as placeholder art anyway
-            if (this.facing == 1) {
-                this.graphics.use("attackleft");
-            }
-            else {
-                this.graphics.use("attackright");
-            }
+        if (this.attacking > 0) {
+            this.graphics.use(this.facing === 1 ? "attackleft" : "attackright");
             this.attacking -= 1;
         }
 
