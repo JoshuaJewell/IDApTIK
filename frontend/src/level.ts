@@ -20,13 +20,13 @@ export class Level extends ex.Scene {
 
     // Actors
     const actor = new Player(engine.halfDrawWidth + 100, engine.halfDrawHeight - 100);
-    const baddie = new Baddie(engine.halfDrawWidth - 200, 300 - 30, 1);
-    const baddie2 = new Baddie(engine.halfDrawWidth + 200, 300 - 30, -1);
+    const hostile = new Baddie(engine.halfDrawWidth - 200, 300 - 30, 1);
+    const hostile2 = new Baddie(engine.halfDrawWidth + 200, 300 - 30, -1);
     const npc = new NPC(engine.halfDrawWidth + 100, engine.halfDrawHeight - 100);
     const floor = new Floor(0, 300, 18, 1);
     const otherFloor = new Floor(engine.halfDrawWidth + 50, 200, 5, 1);
 
-    [actor, npc, baddie, baddie2, floor, otherFloor].forEach(ent => engine.add(ent));
+    [actor, npc, hostile, hostile2, floor, otherFloor].forEach(ent => engine.add(ent));
 
     // Music
     Resources.levelSTLoop.loop = true;
