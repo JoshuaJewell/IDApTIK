@@ -40,7 +40,7 @@ export class Baddie extends BaseActor {
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        if (evt.other instanceof Player && (evt.other.isAttacking())) {
+        if (evt.other instanceof Player && evt.other.isAttacking()) {
             Resources.gotEm.play(.1);
             // Clear patrolling
             this.actions.clearActions();
