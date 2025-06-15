@@ -190,7 +190,7 @@ export class Player extends BaseActor {
             }
 
             // Determine magnitude and velocity of jump based on displacement of pointer 
-            let jumpmag = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / Player.   DISPLACEMENT_DIVISOR), maxjump);
+            let jumpmag = Math.min(this.jumpPotential * (Math.hypot(relx, rely) / Player.DISPLACEMENT_DIVISOR), maxjump);
             let jumpvely = jumpmag * Math.sin(jumpangle);
             let jumpvelx = jumpmag * Math.cos(jumpangle);
 
@@ -223,7 +223,7 @@ export class Player extends BaseActor {
                     pos: this.getGlobalPos(),
                 });
                 lineActor.graphics.anchor = ex.Vector.Zero;
-                lineActor.z = -1; // Almost creates the illusion that these currently ignore    all obstructions
+                lineActor.z = -1; // Almost creates the illusion that these currently ignore all obstructions
                 let pointthickness = (
                     Player.MIN_POINT_THICKNESS +
                     (Player.MAX_POINT_THICKNESS - Player.MIN_POINT_THICKNESS) *
