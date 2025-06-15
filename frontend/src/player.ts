@@ -15,14 +15,15 @@ export class Player extends BaseActor {
     private static readonly SPRINT_MULT = 2;
     private static readonly DISPLACEMENT_DIVISOR = 100; // Lower values increase sensitivity of cursor-Player displacement on jump speed
 
-    // Graphics constants, may need to be adjustable in future settings menu
-    private static readonly ATTACK_FRAMES = 42; // For animation
-    private static readonly TRAJ_LENGTH = 500; // Lower values are longer
-    private static readonly T_INC = 0.06; // Frequency of trajpoints, <0.02 has significant performance issues
-    private static readonly TRAJPOINTS_DIVISOR = Player.T_INC * Player.TRAJ_LENGTH; 
+    // Graphics constants, may be good for styling
+    private static readonly TRAJ_LENGTH = 50000; // Lower values are longer
+    private static readonly T_INC = 0.06; // Frequency of trajpoints, <0.005 begins to look continuous but may cause performance issues
     private static readonly MIN_POINT_THICKNESS = 2.75; // Not actual minimum, it was at some stage before the drawing formula was updated, I suspect actual minimum at POINT_THICKNESS difference of 0.75 is ~1.5
     private static readonly MAX_POINT_THICKNESS = 3.5; // Not actual maximum, it was at some stage before the drawing formula was updated, I suspect actual maximum at POINT_THICKNESS difference of 0.75 is ~4
     private static readonly POINT_FLICKER_SPEED = 0.1; // Higher values increase flicker
+    
+    // Graphics constants, probably ought to stay as such
+    private static readonly ATTACK_FRAMES = 42; // For animation
     private static readonly G = 400; // Gravitational constant, empirical
     private static readonly ANGLE_JMPLIM_E = Math.PI / 4; // South-East, needs increasing
     private static readonly ANGLE_JMPLIM_W = 3 * Math.PI / 4; // South-West, needs decreasing
@@ -134,9 +135,10 @@ export class Player extends BaseActor {
         this.trajectoryActors = [];
 
         // Prepare attribute-influenced motion vars
-        let speed = Player.SPEED_MULT * this.dex;
-        let jumpacc = Player.JMPACC_MULT * this.dex;
-        let maxjump = Player.MAXJMP_MULT * this.str;
+        let speed = Player.SPEED_MULT * this.dex;                               // Dex increases speed
+        let jumpacc = Player.JMPACC_MULT * this.dex;                            // Dex increases jump charge speed
+        let maxjump = Player.MAXJMP_MULT * this.str;                            // Str increases jump height
+        let trajpointsdivisor = Player.T_INC * Player.TRAJ_LENGTH / this.int;   // Int increases jump trajectory prediction distance
 
         // Player input
         let attackkey = engine.input.keyboard.isHeld(ex.Keys.X);
@@ -212,7 +214,7 @@ export class Player extends BaseActor {
 
             // Trajectory drawing
             let t = Player.T_INC;
-            let trajpoints = Math.round(jumpmag / Player.TRAJPOINTS_DIVISOR);
+            let trajpoints = Math.round(jumpmag / trajpointsdivisor);
             for (let i = 0; i < trajpoints; i++) {
                 // Find coords on parametric equation
                 let trajpointx = (t * jumpvelx);
