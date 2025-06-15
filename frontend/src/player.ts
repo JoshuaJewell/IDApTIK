@@ -151,40 +151,24 @@ export class Player extends BaseActor {
             this.attacking = Player.ATTACK_FRAMES;
         }
         if (this.onGround) {
-            if (this.facing == 1) {
-                this.graphics.use("idleleft");
-            }
-            else {
-                this.graphics.use("idleright");
-            } 
-            if (leftkey) {
-                this.vel.x = -speed;
-                this.facing = 1;
-                this.graphics.use("walkleft");
+            this.graphics.use(this.facing == 1 ? "idleleft" : "idleright");
+            
+            if (leftkey || rightkey) {
+                this.vel.x = (leftkey ? -1 : 1) * speed;
+                this.facing = leftkey ? 1 : 2;
+                this.graphics.use((leftkey ? "walkleft" : "walkright"));
+
                 if (sprintkey) {
                     this.vel.x *= Player.SPRINT_MULT;
-                    this.graphics.use("sprintleft");
-                }
-            }
-            if (rightkey) {
-                this.vel.x = speed;
-                this.facing = 2;
-                this.graphics.use("walkright");
-                if (sprintkey) {
-                    this.vel.x *= Player.SPRINT_MULT;
-                    this.graphics.use("sprintright");
+                    this.graphics.use(leftkey ? "sprintleft" : "sprintright");
                 }
             }
             if (!sprintkey && crouchkey) {
                 this.vel.x *= Player.CROUCH_MULT;
-                if (this.facing == 1) {
-                    this.graphics.use("crouchleft");
-                }
-                else {
-                    this.graphics.use("crouchright");
-                }
+                this.graphics.use(this.facing == 1 ? "crouchleft" : "crouchright");
             }
         }
+
 
         // ...oh my god what is this??? (Jump)
         if ((upkey || this.jumpPotential > 0) && this.onGround) {
@@ -212,24 +196,14 @@ export class Player extends BaseActor {
 
             // Match Player facing with mouse facing, apply animation
             this.facing = (0.5 * relx / Math.abs(relx)) + 1.5; // -ve relx = 1 (left), +ve  relx = 2 (right)
-            if (this.facing == 1) {
-                this.graphics.use("crouchleft");
-            }
-            else {
-                this.graphics.use("crouchright");
-            }
+            this.graphics.use(this.facing == 1 ? "crouchleft" : "crouchright");
 
             // Release jump or continue increasing potential
             if (upkey && (this.jumpPotential < maxjump)) {
                 this.jumpPotential += jumpacc;
             }
             else if (!upkey && (this.jumpPotential > 0)) {
-                if (this.facing == 1) {
-                    this.graphics.use("jumpleft");
-                }
-                else {
-                    this.graphics.use("jumpright");
-                }
+                this.graphics.use(this.facing == 1 ? "jumpleft" : "jumpright");
                 this.vel.y = jumpvely;
                 this.vel.x = jumpvelx;
                 this.jumpPotential = 0;
