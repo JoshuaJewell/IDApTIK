@@ -40,7 +40,7 @@ export class Baddie extends BaseActor {
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        if (evt.other instanceof Player && evt.other.isAttacking()) {
+        if (evt.other.owner instanceof Player && (evt.other.owner as Player).attacking > 0) {
             Resources.gotEm.play(.1);
             // Clear patrolling
             this.actions.clearActions();
@@ -49,7 +49,7 @@ export class Baddie extends BaseActor {
 
             // Launch into air with rotation
             this.vel = new ex.Vector(0, -300);
-            this.acc = ex.Physics.acc;
+            this.acc = new ex.Vector(0, 300);
             this.angularVelocity = 2;
         }
     }
