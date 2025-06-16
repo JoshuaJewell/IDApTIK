@@ -1,20 +1,34 @@
 import * as ex from 'excalibur';
+import { blockSprite } from './resources';
+import BaseActor from './baseactor';
 
-export class Projectile extends ex.Actor {
-  private damage: number;
+export class Projectile extends BaseActor {
+    constructor(x: number, y: number, direction: number) {
+        super({
+            name: 'Projectile',
+            pos: new ex.Vector(x, y),
+            collisionType: ex.CollisionType.Active,
+            collider: ex.Shape.Box(10, 10, ex.Vector.Half, ex.vec(0, 0))
+        });
 
-  constructor(x: number, y: number, damage: number) {
-    super({
-      name: 'Projectile',
-      pos: new ex.Vector(x, y),
-      collisionType: ex.CollisionType.Active,
-      collider: ex.Shape.Circle(5),
-    });
+        this.vel = new ex.Vector(400 * direction, 0);
+    }
 
-    this.damage = damage;
-  }
+    timeAlive = 0;
 
-  public update(engine: ex.Engine, delta: number) {
-    this.vel.y += 100 * delta;
+    onInitialize(engine: ex.Engine) {
+        this.graphics.use(blockSprite);
+    }
+
+    onPostCollision(evt: ex.PostCollisionEvent) {
+        
+    }
+
+    // Update the projectile's position
+    onPreUpdate(engine: ex.Engine, delta: number) {
+        if (this.pos.x < 0 || this.pos.x > engine.drawWidth || this.timeAlive > 1000) {
+            this.kill();
+        }
+        this.timeAlive += 1;
   }
 }

@@ -1,5 +1,6 @@
 import * as ex from 'excalibur';
 import { playerSpriteSheet, Resources } from './resources';
+import { Projectile } from './projectile';
 import { Baddie } from './baddie';
 import BaseActor from './baseactor';
 
@@ -40,6 +41,12 @@ export class Player extends BaseActor {
     public isAttacking(): boolean {
         return this.attacking > 0;
     }
+    private fireProjectile(engine: ex.Engine) {
+        const direction = this.facing === 1 ? -1 : 1;
+        const projectile = new Projectile(this.pos.x, this.pos.y, direction);
+        engine.add(projectile);
+    }
+
 
     // Graphics variables
     private timeAlive = 0; // Increments every PreUpdate, currently only for trajpoint flicker effect
@@ -142,6 +149,7 @@ export class Player extends BaseActor {
 
         // Player input
         let attackkey = engine.input.keyboard.isHeld(ex.Keys.X);
+        let firekey = engine.input.keyboard.isHeld(ex.Keys.Y);
         let sprintkey = engine.input.keyboard.isHeld(ex.Keys.ShiftLeft);
         let upkey = (engine.input.keyboard.isHeld(ex.Keys.Up) || engine.input.keyboard.isHeld(ex.Keys.W)); // upkey currently for jump, want to replace with mousedown
         let leftkey = (engine.input.keyboard.isHeld(ex.Keys.Left) || engine.input.keyboard.isHeld(ex.Keys.A));
@@ -250,6 +258,9 @@ export class Player extends BaseActor {
         if (this.attacking > 0) {
             this.graphics.use(this.facing === 1 ? "attackleft" : "attackright");
             this.attacking -= 1;
+        }
+        if (firekey) {
+            this.fireProjectile(engine);
         }
 
         this.timeAlive += 1;
