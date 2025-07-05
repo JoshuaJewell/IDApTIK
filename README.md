@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=JoshuaJewell.IDApTIK&"  />
+</div>
+
 # Invisible Door: Actionpoint Trauma, Inc. Kickers  
 **IDApTIK: If you have to ask, you're already compromised.**  
 
