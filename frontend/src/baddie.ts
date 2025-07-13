@@ -2,6 +2,7 @@ import * as ex from 'excalibur';
 import { baddieSpriteSheet, Resources } from "./resources";
 import { Player } from './player';
 import BaseActor from './baseactor';
+import { Projectile } from './projectile';
 let player:Player = new Player(0, 0);
 
 export class Baddie extends BaseActor {
@@ -40,7 +41,7 @@ export class Baddie extends BaseActor {
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        if (evt.other.owner instanceof Player && (evt.other.owner as Player).attacking > 0) {
+        if ((evt.other.owner instanceof Player && (evt.other.owner as Player).attacking > 0) || evt.other.owner instanceof Projectile) {
             Resources.gotEm.play(.1);
             // Clear patrolling
             this.actions.clearActions();

@@ -8,7 +8,8 @@ export class Projectile extends BaseActor {
             name: 'Projectile',
             pos: new ex.Vector(x, y),
             collisionType: ex.CollisionType.Active,
-            collider: ex.Shape.Box(10, 10, ex.Vector.Half, ex.vec(0, 0))
+            collisionGroup: ex.CollisionGroupManager.groupByName("player"),
+            collider: ex.Shape.Box(1, 1, ex.Vector.Half, ex.vec(0, 0))
         });
 
         this.vel = new ex.Vector(400 * direction, 0);
@@ -26,7 +27,7 @@ export class Projectile extends BaseActor {
 
     // Update the projectile's position
     onPreUpdate(engine: ex.Engine, delta: number) {
-        if (this.pos.x < 0 || this.pos.x > engine.drawWidth || this.timeAlive > 1000) {
+        if (this.pos.x < 0 || this.pos.x > engine.drawWidth || this.timeAlive > 200) {
             this.kill();
         }
         this.timeAlive += 1;
