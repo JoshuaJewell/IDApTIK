@@ -1,6 +1,8 @@
 import * as ex from 'excalibur';
 import { blockSprite } from './resources';
 import BaseActor from './baseactor';
+import { Baddie } from './baddie';
+import { Floor } from './floor';
 
 export class Projectile extends BaseActor {
     constructor(x: number, y: number, direction: number) {
@@ -12,7 +14,7 @@ export class Projectile extends BaseActor {
             collider: ex.Shape.Box(1, 1, ex.Vector.Half, ex.vec(0, 0))
         });
 
-        this.vel = new ex.Vector(400 * direction, 0);
+        this.vel = new ex.Vector(800 * direction, 0);
     }
 
     timeAlive = 0;
@@ -22,7 +24,10 @@ export class Projectile extends BaseActor {
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        
+        if (evt.other.owner instanceof Baddie) {
+            console.log(evt.other.owner)
+            this.timeAlive =+ 200;
+        }
     }
 
     // Update the projectile's position

@@ -15,6 +15,7 @@ export class Player extends BaseActor {
     private static readonly CROUCH_MULT = 0.5;
     private static readonly SPRINT_MULT = 2;
     private static readonly DISPLACEMENT_DIVISOR = 100; // Lower values increase sensitivity of cursor-Player displacement on jump speed
+    private static readonly FIRERATE = 10;
 
     // Graphics constants, may be good for styling
     private static readonly TRAJ_LENGTH = 50000; // Lower values are longer
@@ -36,6 +37,7 @@ export class Player extends BaseActor {
     private hurtTime = 0;
     private attacking = 0;
     private jumpPotential = 0;
+    private firecooldown = 0;
 
     // Gameplay methods
     public isAttacking(): boolean {
@@ -259,9 +261,14 @@ export class Player extends BaseActor {
             this.graphics.use(this.facing === 1 ? "attackleft" : "attackright");
             this.attacking -= 1;
         }
-        if (firekey) {
-            this.fireProjectile(engine);
+        if (this.firecooldown > 0) {
+            this.firecooldown -= 1;
         }
+        else if (firekey) {
+            this.fireProjectile(engine);
+            this.firecooldown = Player.FIRERATE;
+        }
+        
 
         this.timeAlive += 1;
     }
