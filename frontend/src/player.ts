@@ -1,8 +1,8 @@
 import * as ex from 'excalibur';
 import { playerSpriteSheet, Resources } from './resources';
 import { Projectile } from './projectile';
-import { Baddie } from './baddie';
 import BaseActor from './baseactor';
+import { PlayerInput } from './playerInput.ts';
 
 export class Player extends BaseActor {
     // Gameplay constants
@@ -77,18 +77,9 @@ export class Player extends BaseActor {
     // OnInitialize is called before the 1st actor update
     onInitialize(engine: ex.Engine) {
         // Register all animations
-  
-        // Legacy
-        this.createAnimationPair("hurt", playerSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
 
-        // New
-        //this.createAnimationPair("idle", playerSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
-        //this.createAnimationPair("walk", playerSpriteSheet, [16, 17, 18, 19], 100);
-        //this.createAnimationPair("crouch", playerSpriteSheet, [34, 35, 36], 200);
-        //this.createAnimationPair("sprint", playerSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
-        //this.createAnimationPair("attack", playerSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
-        //this.createAnimationPair("jump", playerSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
-        
+        this.createAnimationPair("hurt", playerSpriteSheet, [0, 1, 0, 1, 0, 1], 150); // Legacy
+
         this.createAnimationPair("idle", playerSpriteSheet, [0, 1, 2, 3], 200);
         this.createAnimationPair("walk", playerSpriteSheet, [4, 5, 6, 7], 200);
         this.createAnimationPair("sprint", playerSpriteSheet, [4, 5, 6, 7], 100);
@@ -163,33 +154,25 @@ export class Player extends BaseActor {
         let maxjump = Player.MAXJMP_MULT * this.str;                            // Str increases jump height
         let trajpointsdivisor = Player.T_INC * Player.TRAJ_LENGTH / this.int;   // Int increases jump trajectory prediction distance
 
-        // Player input
-        let attackkey = engine.input.keyboard.isHeld(ex.Keys.X);
-        let firekey = engine.input.keyboard.isHeld(ex.Keys.Y);
-        let sprintkey = engine.input.keyboard.isHeld(ex.Keys.ShiftLeft);
-        let upkey = (engine.input.keyboard.isHeld(ex.Keys.Up) || engine.input.keyboard.isHeld(ex.Keys.W)); // upkey currently for jump, want to replace with mousedown
-        let leftkey = (engine.input.keyboard.isHeld(ex.Keys.Left) || engine.input.keyboard.isHeld(ex.Keys.A));
-        let crouchkey = (engine.input.keyboard.isHeld(ex.Keys.Down) || engine.input.keyboard.isHeld(ex.Keys.S)) || engine.input.keyboard.isHeld(ex.Keys.ControlLeft);
-        let rightkey = (engine.input.keyboard.isHeld(ex.Keys.Right) || engine.input.keyboard.isHeld(ex.Keys.D));
+        const input = new PlayerInput(engine);
 
-        // Everything but jump, how serene and well laid out and...
-        if (attackkey) {
+        if (input.attack) {
             this.attacking = Player.ATTACK_FRAMES;
         }
         if (this.onGround) {
             this.graphics.use(this.facing == 1 ? "idleleft" : "idleright");
             
-            if (leftkey || rightkey) {
-                this.vel.x = (leftkey ? -1 : 1) * speed;
-                this.facing = leftkey ? 1 : 2;
-                this.graphics.use((leftkey ? "walkleft" : "walkright"));
+            if (input.left || input.right) {
+                this.vel.x = (input.left ? -1 : 1) * speed;
+                this.facing = input.left ? 1 : 2;
+                this.graphics.use((input.left ? "walkleft" : "walkright"));
 
-                if (sprintkey) {
+                if (input.sprint) {
                     this.vel.x *= Player.SPRINT_MULT;
-                    this.graphics.use(leftkey ? "sprintleft" : "sprintright");
+                    this.graphics.use(input.left ? "sprintleft" : "sprintright");
                 }
             }
-            if (!sprintkey && crouchkey) {
+            if (!input.sprint && input.crouch) {
                 this.vel.x *= Player.CROUCH_MULT;
                 this.graphics.use(this.facing == 1 ? "crouchleft" : "crouchright");
             }
@@ -197,7 +180,7 @@ export class Player extends BaseActor {
 
 
         // ...oh my god what is this??? (Jump)
-        if ((upkey || this.jumpPotential > 0) && this.onGround) {
+        if ((input.up || this.jumpPotential > 0) && this.onGround) {
             this.vel.x = 0; // Lock Player position while aiming
 
             // Find pointer-Player difference
@@ -225,10 +208,10 @@ export class Player extends BaseActor {
             this.graphics.use(this.facing == 1 ? "crouchleft" : "crouchright");
 
             // Release jump or continue increasing potential
-            if (upkey && (this.jumpPotential < maxjump)) {
+            if (input.up && (this.jumpPotential < maxjump)) {
                 this.jumpPotential += jumpacc;
             }
-            else if (!upkey && (this.jumpPotential > 0)) {
+            else if (!input.up && (this.jumpPotential > 0)) {
                 this.graphics.use(this.facing == 1 ? "jumpleft" : "jumpright");
                 this.vel.y = jumpvely;
                 this.vel.x = jumpvelx;
@@ -277,7 +260,7 @@ export class Player extends BaseActor {
         if (this.firecooldown > 0) {
             this.firecooldown -= delta;
         }
-        else if (firekey) {
+        else if (input.fire) {
             this.fireProjectile(engine);
             this.firecooldown = Player.FIRERATE;
         }
