@@ -6,7 +6,6 @@ import { PlayerInput } from './playerInput.ts';
 
 export class Player extends BaseActor {
     // Gameplay constants
-    private static readonly HURT_TIME = 1000; // Legacy
     private static readonly FRICTION = 0.75;
     private static readonly FRICTION_THRESHOLD = 0.05; // Stop character completely when xvel is lower than this value
     private static readonly SPEED_MULT = 1.6;
@@ -32,9 +31,7 @@ export class Player extends BaseActor {
 
     // Gameplay variables
     private onGround = true;
-    private hurt = false;
-    private facing = 1; // 1 Left, 2 Right, (-1 Leftdown, -2 Rightdown - legacy)
-    private hurtTime = 0;
+    private facing = 1; // 1 Left, 2 Right
     private attacking = 0;
     private jumpPotential = 0;
     private firecooldown = 0;
@@ -77,9 +74,6 @@ export class Player extends BaseActor {
     // OnInitialize is called before the 1st actor update
     onInitialize(engine: ex.Engine) {
         // Register all animations
-
-        this.createAnimationPair("hurt", playerSpriteSheet, [0, 1, 0, 1, 0, 1], 150); // Legacy
-
         this.createAnimationPair("idle", playerSpriteSheet, [0, 1, 2, 3], 200);
         this.createAnimationPair("walk", playerSpriteSheet, [4, 5, 6, 7], 200);
         this.createAnimationPair("sprint", playerSpriteSheet, [4, 5, 6, 7], 100);
@@ -92,41 +86,15 @@ export class Player extends BaseActor {
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        // Player has collided with the Top of another collider (legacy)
-        //if (evt.side === ex.Side.Bottom) {
-        //    this.onGround = true;
-        //}
-
         // Halt xvel when colliding with a side (improves quality of projectile motion)
         let sideevt = (evt.side === ex.Side.Left) || (evt.side === ex.Side.Right);
         if (sideevt) {
             this.vel.x = 0;
         }
-
-        // Player collision with enemy, display hurt animation (epistasis)
-        /*if (sideevt && evt.other instanceof Baddie) {
-            if (this.vel.x < 0 && !this.hurt) {
-                this.graphics.use("hurtleft");
-            } 
-            if (this.vel.x >= 0 && !this.hurt) {
-                this.graphics.use("hurtright");
-            }
-            this.hurt = true;
-            this.hurtTime = Player.HURT_TIME;
-            Resources.hit.play(.1);
-        }*/
     }
 
     // After main update, once per frame execute this code
     onPreUpdate(engine: ex.Engine, delta: number) {
-        // If hurt, count down (legacy code, seems this.hurt check is redundant but not ready to mess with yet)
-        if (this.hurtTime >= 0 && this.hurt) {
-            this.hurtTime -= delta;
-            if (this.hurtTime < 0) {
-                this.hurt = false;
-            }
-        }
-
         if (this.vel.y == 0) {
             this.onGround = true;
         }
@@ -178,8 +146,6 @@ export class Player extends BaseActor {
             }
         }
 
-
-        // ...oh my god what is this??? (Jump)
         if ((input.up || this.jumpPotential > 0) && this.onGround) {
             this.vel.x = 0; // Lock Player position while aiming
 
