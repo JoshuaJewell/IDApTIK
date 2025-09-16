@@ -15,7 +15,7 @@ export class Player extends BaseActor {
     private static readonly CROUCH_MULT = 0.5;
     private static readonly SPRINT_MULT = 2;
     private static readonly DISPLACEMENT_DIVISOR = 100; // Lower values increase sensitivity of cursor-Player displacement on jump speed
-    private static readonly FIRERATE = 10;
+    private static readonly FIRERATE = 100;
 
     // Graphics constants, may be good for styling
     private static readonly TRAJ_LENGTH = 50000; // Lower values are longer
@@ -70,7 +70,7 @@ export class Player extends BaseActor {
             pos: new ex.Vector(x, y),
             collisionType: ex.CollisionType.Active,
             collisionGroup: ex.CollisionGroupManager.groupByName("player"),
-            collider: ex.Shape.Box(32, 50, ex.Vector.Half, ex.vec(0, 3))
+            collider: ex.Shape.Box(20, 44, ex.Vector.Half, ex.vec(0, 3))
         });
     }
 
@@ -82,22 +82,29 @@ export class Player extends BaseActor {
         this.createAnimationPair("hurt", playerSpriteSheet, [0, 1, 0, 1, 0, 1], 150);
 
         // New
-        this.createAnimationPair("idle", playerSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
-        this.createAnimationPair("walk", playerSpriteSheet, [16, 17, 18, 19], 100);
-        this.createAnimationPair("crouch", playerSpriteSheet, [34, 35, 36], 200);
-        this.createAnimationPair("sprint", playerSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
-        this.createAnimationPair("attack", playerSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
-        this.createAnimationPair("jump", playerSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
+        //this.createAnimationPair("idle", playerSpriteSheet, [0, 1, 8, 9, 8, 1], 200);
+        //this.createAnimationPair("walk", playerSpriteSheet, [16, 17, 18, 19], 100);
+        //this.createAnimationPair("crouch", playerSpriteSheet, [34, 35, 36], 200);
+        //this.createAnimationPair("sprint", playerSpriteSheet, [24, 25, 26, 27, 28, 29, 30, 31], 100);
+        //this.createAnimationPair("attack", playerSpriteSheet, [68, 69, 70, 71, 64, 65, 66, 67], 100);
+        //this.createAnimationPair("jump", playerSpriteSheet, [40, 41, 42, 43, 44, 45, 46, 47, 48], 100);
+        
+        this.createAnimationPair("idle", playerSpriteSheet, [0, 1, 2, 3], 200);
+        this.createAnimationPair("walk", playerSpriteSheet, [4, 5, 6, 7], 200);
+        this.createAnimationPair("sprint", playerSpriteSheet, [4, 5, 6, 7], 100);
+        this.createAnimationPair("crouch", playerSpriteSheet, [8], 200);
+        this.createAnimationPair("attack", playerSpriteSheet, [12, 13, 14, 15], 100);
+        this.createAnimationPair("jump", playerSpriteSheet, [10], 100);
    
         // onPostCollision is an event, not a lifecycle meaning it can be subscribed to by other things
         this.on('postcollision', (evt) => this.onPostCollision(evt));
     }
 
     onPostCollision(evt: ex.PostCollisionEvent) {
-        // Player has collided with the Top of another collider
-        if (evt.side === ex.Side.Bottom) {
-            this.onGround = true;
-        }
+        // Player has collided with the Top of another collider (legacy)
+        //if (evt.side === ex.Side.Bottom) {
+        //    this.onGround = true;
+        //}
 
         // Halt xvel when colliding with a side (improves quality of projectile motion)
         let sideevt = (evt.side === ex.Side.Left) || (evt.side === ex.Side.Right);
@@ -129,6 +136,13 @@ export class Player extends BaseActor {
             }
         }
 
+        if (this.vel.y == 0) {
+            this.onGround = true;
+        }
+        else {
+            this.onGround = false;
+        }
+        
         // Slow Player to stop
         if (this.onGround) {
             this.vel.x *= Player.FRICTION;
@@ -219,7 +233,6 @@ export class Player extends BaseActor {
                 this.vel.y = jumpvely;
                 this.vel.x = jumpvelx;
                 this.jumpPotential = 0;
-                this.onGround = false;
             }
 
             // Trajectory drawing
@@ -262,7 +275,7 @@ export class Player extends BaseActor {
             this.attacking -= 1;
         }
         if (this.firecooldown > 0) {
-            this.firecooldown -= 1;
+            this.firecooldown -= delta;
         }
         else if (firekey) {
             this.fireProjectile(engine);
@@ -270,6 +283,6 @@ export class Player extends BaseActor {
         }
         
 
-        this.timeAlive += 1;
+        this.timeAlive += delta;
     }
 }

@@ -1,7 +1,8 @@
 import * as ex from 'excalibur';
 
 const Resources = {
-  player: new ex.ImageSource('/res/HPCHAR.png'),
+  //player: new ex.ImageSource('/res/HPCHAR.png'),
+  player: new ex.ImageSource('/res/gitpoint.png'),
   playerRed: new ex.ImageSource('/res/excalibot-red.png'),
   baddie: new ex.ImageSource('/res/baddie.png'),
   block: new ex.ImageSource('/res/block.png'),
@@ -26,9 +27,16 @@ const baddieSpriteSheet = ex.SpriteSheet.fromImageSource({
   grid: { columns: 6, rows: 1, spriteWidth: 32, spriteHeight: 32 }
 });
 
+/*
 const playerSpriteSheet = ex.SpriteSheet.fromImageSource({
   image: Resources.player,
   grid: { columns: 8, rows: 9, spriteWidth: 32, spriteHeight: 32 }
+});
+*/
+
+const playerSpriteSheet = ex.SpriteSheet.fromImageSource({
+  image: Resources.player,
+  grid: { columns: 4, rows: 4, spriteWidth: 24, spriteHeight: 24 }
 });
 
 const blockSprite = Resources.block.toSprite();

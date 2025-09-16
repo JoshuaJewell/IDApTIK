@@ -24,8 +24,8 @@ class BaseActor extends Actor {
       speed: number,
       scale: ex.Vector = new Vector(2, 2)
     ): void {
-      this.createAnimation(`${name}right`, spriteSheet, frames, speed, scale);
-      this.createAnimation(`${name}left`, spriteSheet, frames, speed, scale, true);
+      this.createAnimation(`${name}left`, spriteSheet, frames, speed, scale);
+      this.createAnimation(`${name}right`, spriteSheet, frames, speed, scale, true);
     }
 }
 

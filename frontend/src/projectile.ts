@@ -33,7 +33,7 @@ export class Projectile extends BaseActor {
     // Update the projectile's position and handle lifetime
     onPreUpdate(engine: ex.Engine, delta: number): void {
         // Check for out-of-bounds or max lifetime
-        if (this.pos.x < 0 || this.pos.x > engine.drawWidth || this.timeAlive > MAX_LIFETIME) {
+        if (this.timeAlive > MAX_LIFETIME) {
             this.kill();
         }
         this.timeAlive += delta;

@@ -19,14 +19,39 @@ export class Level extends ex.Scene {
     ex.CollisionGroupManager.create("floor");
 
     // Actors
-    const player = new Player(engine.halfDrawWidth + 100, engine.halfDrawHeight - 100);
-    const hostile = new Baddie(engine.halfDrawWidth - 200, 300 - 30, 1);
-    const hostile2 = new Baddie(engine.halfDrawWidth + 200, 300 - 30, -1);
-    const npc = new NPC(engine.halfDrawWidth + 100, engine.halfDrawHeight - 100);
-    const floor = new Floor(0, 300, 18, 1);
-    const otherFloor = new Floor(engine.halfDrawWidth + 50, 200, 5, 1);
+    const player = new Player(
+      engine.halfDrawWidth + 100,
+      engine.halfDrawHeight - 100
+    );
+    const hostile = new Baddie(
+      engine.halfDrawWidth - 200,
+      300 - 30,
+      1
+    );
+    const hostile2 = new Baddie(
+      engine.halfDrawWidth + 200,
+      300 - 30,
+      -1
+    );
+    const npc = new NPC(
+      engine.halfDrawWidth + 100,
+      engine.halfDrawHeight - 100
+    );
+    const floor = new Floor(
+      0,
+      300,
+      18,
+      1
+    );
+    const otherFloor = new Floor(
+      engine.halfDrawWidth + 50,
+      200,
+      5,
+      1
+    );
 
     [player, npc, hostile, hostile2, floor, otherFloor].forEach(ent => engine.add(ent));
+    player.actions.scaleTo(ex.vec(1.6, 1.6), ex.vec(2, 2));
 
     // Music
     Resources.levelSTLoop.loop = true;

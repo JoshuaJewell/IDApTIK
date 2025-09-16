@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const engine = new ex.Engine({
     canvasElement: canvas,
-    backgroundColor: ex.Color.fromHex('#efefef'),
+    backgroundColor: ex.Color.fromHex('#d4d4d4ff'),
     width: 600,
     height: 400,
     fixedUpdateFps: 60,
