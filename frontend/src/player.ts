@@ -37,6 +37,17 @@ export class Player extends BaseActor {
     private firecooldown = 0;
 
     // Gameplay methods
+    private updateGroundState() {
+        this.onGround = this.vel.y === 0;
+    }
+    private applyFriction() {
+        if (this.onGround) {
+            this.vel.x *= Player.FRICTION;
+            if (Math.abs(this.vel.x) < Player.FRICTION_THRESHOLD) {
+                this.vel.x = 0;
+            }
+        }
+    }
     public isAttacking(): boolean {
         return this.attacking > 0;
     }
@@ -45,7 +56,6 @@ export class Player extends BaseActor {
         const projectile = new Projectile(this.pos.x, this.pos.y, direction);
         engine.add(projectile);
     }
-
 
     // Graphics variables
     private timeAlive = 0; // Increments every PreUpdate, currently only for trajpoint flicker effect
@@ -58,7 +68,6 @@ export class Player extends BaseActor {
     public int = 100;
     public wil = 100;
     public cha = 100;
-
 
     // Hitbox instantiation
     constructor(x: number, y: number) {
@@ -95,20 +104,9 @@ export class Player extends BaseActor {
 
     // After main update, once per frame execute this code
     onPreUpdate(engine: ex.Engine, delta: number) {
-        if (this.vel.y == 0) {
-            this.onGround = true;
-        }
-        else {
-            this.onGround = false;
-        }
+        this.updateGroundState()
         
-        // Slow Player to stop
-        if (this.onGround) {
-            this.vel.x *= Player.FRICTION;
-            if (Math.abs(this.vel.x) < Player.FRICTION_THRESHOLD) {
-                this.vel.x = 0;
-            }
-        }
+        this.applyFriction()
 
         // Remove trajpoints
         for (const actor of this.trajectoryActors) {
@@ -232,6 +230,6 @@ export class Player extends BaseActor {
         }
         
 
-        this.timeAlive += delta;
+        this.timeAlive += 1;
     }
 }
