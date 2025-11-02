@@ -31,7 +31,7 @@ We use the **Tri‑Perimeter Modding Architecture (TPMA)** to balance developer 
 ---
 
 ## Perimeter 2: Expert Extensions
-- **Languages**: TypeScript + controlled Rust/Elixir bindings
+- **Languages**: Rescript + controlled Rust/Elixir bindings
 - **Responsibilities**:
   - Advanced AI behaviors (guards, stealth logic)
   - Custom puzzle mechanics (gadgets, traps)
